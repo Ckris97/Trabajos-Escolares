@@ -1,0 +1,1427 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Órbita · Asesorías Académicas para Prepa</title>
+<meta name="description" content="Plataforma de asesorías académicas personalizadas: agenda tu sesión, sube tu material y aprende a dominar tus materias.">
+<style>
+/* ============================================================
+   ÓRBITA · Asesorías Académicas
+   Un solo archivo. Sin dependencias. Funciona offline.
+   ------------------------------------------------------------
+   ÍNDICE CSS
+   01. Tokens (variables de diseño)
+   02. Reset y base
+   03. Utilidades y layout
+   04. Fondo animado + cursor + progreso de scroll
+   05. Navegación
+   06. Hero
+   07. Métricas
+   08. Servicios (asesorías)
+   09. Proceso
+   10. Formulario de sesión
+   11. Zona de archivos
+   12. Modal de envío
+   13. FAQ
+   14. Testimonios
+   15. Footer + flotantes
+   16. Animaciones de scroll (reveal)
+   17. Responsive
+   18. Accesibilidad / reduced motion
+   ============================================================ */
+
+/* ---------- 01. Tokens ---------- */
+:root{
+  /* Paleta "aurora nocturna": índigo profundo + violeta/cian + ámbar de energía */
+  --bg-0:#0B0E1D;          /* espacio profundo */
+  --bg-1:#111530;          /* panel base */
+  --bg-2:#181D3F;          /* panel elevado */
+  --glass:rgba(255,255,255,.055);
+  --glass-strong:rgba(255,255,255,.09);
+  --stroke:rgba(255,255,255,.12);
+  --stroke-soft:rgba(255,255,255,.07);
+  --ink:#EEF1FF;           /* texto principal */
+  --ink-dim:#A7AECD;       /* texto secundario */
+  --ink-faint:#6E7699;     /* pistas / metadatos */
+  --violet:#7C5CFF;
+  --cyan:#22D3EE;
+  --amber:#FFB454;         /* energía: CTAs y acentos cálidos */
+  --rose:#FF6B9D;
+  --ok:#3DDC97;
+  --err:#FF6B6B;
+  --grad-main:linear-gradient(120deg,var(--violet),var(--cyan));
+  --grad-warm:linear-gradient(120deg,var(--amber),var(--rose));
+  --radius-l:26px;
+  --radius-m:18px;
+  --radius-s:12px;
+  --shadow-1:0 10px 40px rgba(0,0,0,.45);
+  --shadow-glow:0 0 0 1px rgba(124,92,255,.25),0 12px 50px rgba(124,92,255,.22);
+  --font-display:"Avenir Next","Segoe UI Variable Display","Segoe UI",system-ui,-apple-system,sans-serif;
+  --font-body:"Segoe UI",system-ui,-apple-system,"Helvetica Neue",Arial,sans-serif;
+  --font-mono:ui-monospace,"Cascadia Code","SF Mono",Consolas,monospace;
+  --max-w:1180px;
+  --nav-h:74px;
+}
+
+/* ---------- 02. Reset y base ---------- */
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{
+  font-family:var(--font-body);
+  background:var(--bg-0);
+  color:var(--ink);
+  line-height:1.6;
+  overflow-x:hidden;
+  -webkit-font-smoothing:antialiased;
+}
+img,svg{display:block;max-width:100%}
+button,input,select,textarea{font:inherit;color:inherit}
+a{color:inherit;text-decoration:none}
+::selection{background:rgba(124,92,255,.45)}
+
+/* Scrollbar sutil */
+::-webkit-scrollbar{width:10px}
+::-webkit-scrollbar-track{background:var(--bg-0)}
+::-webkit-scrollbar-thumb{background:#2A3060;border-radius:99px}
+::-webkit-scrollbar-thumb:hover{background:#3A4180}
+
+/* ---------- 03. Utilidades y layout ---------- */
+.wrap{width:min(var(--max-w),92%);margin-inline:auto}
+section{padding:96px 0;position:relative}
+.eyebrow{
+  font-family:var(--font-mono);
+  font-size:.78rem;
+  letter-spacing:.22em;
+  text-transform:uppercase;
+  color:var(--cyan);
+  display:inline-flex;
+  align-items:center;
+  gap:.6em;
+}
+.eyebrow::before{content:"";width:26px;height:1px;background:var(--cyan)}
+h1,h2,h3{font-family:var(--font-display);line-height:1.12;letter-spacing:-.02em}
+h2{font-size:clamp(1.9rem,4vw,2.7rem);margin:.5em 0 .4em;font-weight:800}
+.section-sub{color:var(--ink-dim);max-width:560px;font-size:1.05rem}
+.grad-text{background:var(--grad-main);-webkit-background-clip:text;background-clip:text;color:transparent}
+.grad-text-warm{background:var(--grad-warm);-webkit-background-clip:text;background-clip:text;color:transparent}
+
+/* Botones */
+.btn{
+  display:inline-flex;align-items:center;justify-content:center;gap:.55em;
+  padding:.95em 1.7em;border-radius:99px;border:none;cursor:pointer;
+  font-weight:700;font-size:1rem;transition:transform .25s ease,box-shadow .25s ease,background .25s ease;
+  position:relative;overflow:hidden;
+}
+.btn svg{width:19px;height:19px;flex:none}
+.btn-primary{background:var(--grad-main);color:#fff;box-shadow:0 8px 30px rgba(124,92,255,.4)}
+.btn-primary:hover{transform:translateY(-3px);box-shadow:0 14px 44px rgba(124,92,255,.55)}
+.btn-ghost{background:var(--glass);border:1px solid var(--stroke);color:var(--ink);backdrop-filter:blur(12px)}
+.btn-ghost:hover{background:var(--glass-strong);transform:translateY(-3px)}
+.btn-warm{background:var(--grad-warm);color:#1A1030;box-shadow:0 8px 30px rgba(255,180,84,.35)}
+.btn-warm:hover{transform:translateY(-3px);box-shadow:0 14px 44px rgba(255,180,84,.5)}
+.btn:active{transform:translateY(-1px) scale(.98)}
+/* Brillo que cruza el botón primario */
+.btn-primary::after{
+  content:"";position:absolute;inset:0;
+  background:linear-gradient(100deg,transparent 30%,rgba(255,255,255,.35) 50%,transparent 70%);
+  transform:translateX(-120%);
+}
+.btn-primary:hover::after{transition:transform .7s ease;transform:translateX(120%)}
+
+/* Tarjeta de vidrio genérica */
+.glass{
+  background:var(--glass);
+  border:1px solid var(--stroke-soft);
+  border-radius:var(--radius-l);
+  backdrop-filter:blur(16px);
+  -webkit-backdrop-filter:blur(16px);
+}
+
+/* ---------- 04. Fondo animado, cursor, progreso ---------- */
+.bg-scene{position:fixed;inset:0;z-index:-2;overflow:hidden;background:
+  radial-gradient(1200px 800px at 85% -10%,rgba(124,92,255,.16),transparent 60%),
+  radial-gradient(1000px 700px at -10% 40%,rgba(34,211,238,.10),transparent 60%),
+  radial-gradient(900px 900px at 60% 110%,rgba(255,107,157,.08),transparent 60%),
+  var(--bg-0);}
+.blob{position:absolute;border-radius:50%;filter:blur(90px);opacity:.5;animation:drift 26s ease-in-out infinite alternate}
+.blob-1{width:460px;height:460px;background:rgba(124,92,255,.35);top:-140px;right:-80px}
+.blob-2{width:380px;height:380px;background:rgba(34,211,238,.22);bottom:8%;left:-120px;animation-duration:32s;animation-delay:-8s}
+.blob-3{width:300px;height:300px;background:rgba(255,180,84,.14);top:45%;left:55%;animation-duration:38s;animation-delay:-16s}
+@keyframes drift{
+  0%{transform:translate(0,0) scale(1)}
+  50%{transform:translate(-60px,50px) scale(1.12)}
+  100%{transform:translate(50px,-40px) scale(.95)}
+}
+/* Estrellas generadas por JS */
+.star{position:absolute;background:#fff;border-radius:50%;opacity:.55;animation:twinkle var(--tw,4s) ease-in-out infinite}
+@keyframes twinkle{0%,100%{opacity:.15;transform:scale(.8)}50%{opacity:.7;transform:scale(1.15)}}
+
+/* Barra de progreso de scroll */
+#scrollProgress{position:fixed;top:0;left:0;height:3px;width:0%;background:var(--grad-main);z-index:1000;border-radius:0 99px 99px 0;box-shadow:0 0 12px rgba(124,92,255,.8)}
+
+/* Cursor personalizado (solo dispositivos con puntero fino) */
+.cursor-dot,.cursor-ring{position:fixed;top:0;left:0;pointer-events:none;z-index:2000;border-radius:50%;transform:translate(-50%,-50%);display:none}
+.cursor-dot{width:7px;height:7px;background:var(--cyan)}
+.cursor-ring{width:34px;height:34px;border:1.5px solid rgba(124,92,255,.75);transition:width .2s,height .2s,border-color .2s,background .2s}
+.cursor-ring.is-hover{width:52px;height:52px;border-color:var(--amber);background:rgba(255,180,84,.08)}
+@media (pointer:fine){
+  .cursor-dot,.cursor-ring{display:block}
+  body.custom-cursor,body.custom-cursor a,body.custom-cursor button,body.custom-cursor select,body.custom-cursor label{cursor:none}
+}
+
+/* ---------- 05. Navegación ---------- */
+.nav{
+  position:fixed;top:0;left:0;right:0;height:var(--nav-h);z-index:900;
+  display:flex;align-items:center;
+  transition:background .3s ease,border-color .3s ease,backdrop-filter .3s ease;
+  border-bottom:1px solid transparent;
+}
+.nav.scrolled{background:rgba(11,14,29,.72);backdrop-filter:blur(18px);border-bottom-color:var(--stroke-soft)}
+.nav-inner{width:min(var(--max-w),92%);margin-inline:auto;display:flex;align-items:center;justify-content:space-between;gap:1rem}
+.logo{display:flex;align-items:center;gap:.6rem;font-family:var(--font-display);font-weight:800;font-size:1.15rem;letter-spacing:-.01em}
+.logo-mark{width:34px;height:34px}
+.nav-links{display:flex;gap:1.6rem;align-items:center;list-style:none}
+.nav-links a{font-size:.95rem;color:var(--ink-dim);position:relative;padding:.3em 0;transition:color .25s}
+.nav-links a::after{content:"";position:absolute;left:0;bottom:0;height:2px;width:0;background:var(--grad-main);border-radius:99px;transition:width .3s ease}
+.nav-links a:hover{color:var(--ink)}
+.nav-links a:hover::after{width:100%}
+.nav-cta{padding:.6em 1.3em;font-size:.9rem}
+.nav-toggle{display:none;background:none;border:none;width:42px;height:42px;position:relative;z-index:2}
+.nav-toggle span{display:block;width:22px;height:2px;background:var(--ink);margin:5px auto;border-radius:2px;transition:transform .3s,opacity .3s}
+.nav-toggle.open span:nth-child(1){transform:translateY(7px) rotate(45deg)}
+.nav-toggle.open span:nth-child(2){opacity:0}
+.nav-toggle.open span:nth-child(3){transform:translateY(-7px) rotate(-45deg)}
+
+/* ---------- 06. Hero ---------- */
+.hero{min-height:100svh;display:flex;align-items:center;padding:calc(var(--nav-h) + 40px) 0 60px}
+.hero-grid{display:grid;grid-template-columns:1.05fr .95fr;gap:3rem;align-items:center}
+.hero h1{font-size:clamp(2.4rem,5.4vw,3.9rem);font-weight:800;margin:.5em 0 .45em}
+.hero-sub{color:var(--ink-dim);font-size:clamp(1.05rem,1.6vw,1.2rem);max-width:520px;margin-bottom:2rem}
+.hero-actions{display:flex;gap:1rem;flex-wrap:wrap}
+.hero-badges{display:flex;gap:1.4rem;margin-top:2.4rem;flex-wrap:wrap}
+.hero-badge{display:flex;align-items:center;gap:.55rem;font-size:.88rem;color:var(--ink-dim)}
+.hero-badge svg{width:18px;height:18px;color:var(--ok)}
+/* Entrada escalonada */
+.hero [data-stagger]{opacity:0;transform:translateY(24px);animation:rise .8s cubic-bezier(.2,.7,.2,1) forwards;animation-delay:calc(var(--i,0)*.12s)}
+@keyframes rise{to{opacity:1;transform:none}}
+
+/* Ilustración orbital (firma visual) */
+.orbit-stage{position:relative;aspect-ratio:1/1;max-width:520px;margin-inline:auto;width:100%}
+.orbit-svg{width:100%;height:100%}
+.orbit-ring{fill:none;stroke:rgba(255,255,255,.10);stroke-dasharray:3 7}
+.orbit-core{filter:drop-shadow(0 0 30px rgba(124,92,255,.65))}
+.orbiter{transform-origin:260px 260px;animation:orbit var(--speed,22s) linear infinite}
+.orbiter.reverse{animation-direction:reverse}
+@keyframes orbit{to{transform:rotate(360deg)}}
+.orbiter-chip{animation:counterOrbit var(--speed,22s) linear infinite;transform-origin:center}
+.orbiter.reverse .orbiter-chip{animation-direction:reverse}
+@keyframes counterOrbit{to{transform:rotate(-360deg)}}
+.float-card{
+  position:absolute;padding:.7rem 1rem;border-radius:var(--radius-s);
+  background:rgba(17,21,48,.82);border:1px solid var(--stroke);
+  backdrop-filter:blur(10px);font-size:.82rem;display:flex;gap:.55rem;align-items:center;
+  box-shadow:var(--shadow-1);animation:hover-float 6s ease-in-out infinite;
+}
+.float-card svg{width:20px;height:20px}
+.float-card strong{display:block;font-size:.85rem}
+.float-card span{color:var(--ink-faint);font-size:.72rem;font-family:var(--font-mono)}
+.fc-1{top:6%;left:-4%;animation-delay:-1s}
+.fc-2{bottom:14%;right:-6%;animation-delay:-3s}
+.fc-3{bottom:-2%;left:10%;animation-delay:-5s}
+@keyframes hover-float{0%,100%{transform:translateY(0)}50%{transform:translateY(-12px)}}
+
+/* Indicador de scroll */
+.scroll-hint{position:absolute;bottom:26px;left:50%;transform:translateX(-50%);display:flex;flex-direction:column;align-items:center;gap:.5rem;color:var(--ink-faint);font-size:.72rem;font-family:var(--font-mono);letter-spacing:.2em}
+.mouse{width:24px;height:38px;border:1.5px solid var(--ink-faint);border-radius:99px;position:relative}
+.mouse::after{content:"";position:absolute;top:7px;left:50%;width:3px;height:7px;background:var(--cyan);border-radius:99px;transform:translateX(-50%);animation:wheel 1.8s ease-in-out infinite}
+@keyframes wheel{0%{opacity:1;transform:translate(-50%,0)}70%{opacity:0;transform:translate(-50%,12px)}100%{opacity:0}}
+
+/* ---------- 07. Métricas ---------- */
+.stats-band{padding:0}
+.stats-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:1.2rem;padding:2rem;border-radius:var(--radius-l)}
+.stat{text-align:center;padding:1rem .5rem;position:relative}
+.stat + .stat::before{content:"";position:absolute;left:-0.6rem;top:20%;bottom:20%;width:1px;background:var(--stroke-soft)}
+.stat-num{font-family:var(--font-display);font-weight:800;font-size:clamp(1.8rem,3.4vw,2.6rem);background:var(--grad-main);-webkit-background-clip:text;background-clip:text;color:transparent}
+.stat-label{color:var(--ink-dim);font-size:.88rem;margin-top:.2rem}
+
+/* ---------- 08. Servicios ---------- */
+.services-head{display:flex;justify-content:space-between;align-items:end;gap:2rem;flex-wrap:wrap;margin-bottom:2.6rem}
+.services-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(255px,1fr));gap:1.2rem}
+.svc{
+  position:relative;padding:1.6rem 1.5rem 1.4rem;border-radius:var(--radius-m);
+  background:var(--glass);border:1px solid var(--stroke-soft);
+  backdrop-filter:blur(14px);overflow:hidden;
+  transition:transform .35s cubic-bezier(.2,.7,.2,1),border-color .35s,box-shadow .35s;
+  display:flex;flex-direction:column;gap:.7rem;
+}
+.svc:hover{transform:translateY(-8px);border-color:rgba(124,92,255,.5);box-shadow:var(--shadow-glow)}
+.svc::before{ /* halo superior al pasar el mouse */
+  content:"";position:absolute;inset:0 0 auto 0;height:90px;
+  background:radial-gradient(200px 90px at var(--mx,50%) -20px,rgba(124,92,255,.35),transparent 70%);
+  opacity:0;transition:opacity .35s;pointer-events:none;
+}
+.svc:hover::before{opacity:1}
+.svc-icon{
+  width:48px;height:48px;border-radius:14px;display:grid;place-items:center;
+  background:linear-gradient(140deg,rgba(124,92,255,.22),rgba(34,211,238,.14));
+  border:1px solid rgba(124,92,255,.3);
+  transition:transform .35s;
+}
+.svc:hover .svc-icon{transform:scale(1.08) rotate(-4deg)}
+.svc-icon svg{width:24px;height:24px;color:var(--cyan)}
+.svc h3{font-size:1.06rem;font-weight:700}
+.svc p{color:var(--ink-dim);font-size:.88rem;flex:1}
+.svc-cta{
+  align-self:flex-start;background:none;border:none;cursor:pointer;
+  color:var(--amber);font-weight:700;font-size:.88rem;
+  display:inline-flex;align-items:center;gap:.4em;padding:.2em 0;
+}
+.svc-cta svg{width:15px;height:15px;transition:transform .3s}
+.svc-cta:hover svg{transform:translateX(5px)}
+.svc-tag{position:absolute;top:1rem;right:1rem;font-family:var(--font-mono);font-size:.62rem;letter-spacing:.14em;color:var(--ink-faint);text-transform:uppercase}
+
+/* ---------- 09. Proceso ---------- */
+.steps{display:grid;grid-template-columns:repeat(3,1fr);gap:1.4rem;margin-top:2.4rem}
+.step{padding:1.8rem;border-radius:var(--radius-m);position:relative}
+.step-n{
+  font-family:var(--font-mono);font-size:.8rem;color:var(--cyan);
+  display:inline-block;border:1px solid rgba(34,211,238,.4);border-radius:99px;
+  padding:.25em .9em;margin-bottom:1rem;letter-spacing:.15em;
+}
+.step h3{font-size:1.1rem;margin-bottom:.5rem}
+.step p{color:var(--ink-dim);font-size:.92rem}
+
+/* ---------- 10. Formulario ---------- */
+.order{position:relative}
+.order-shell{
+  border-radius:32px;padding:clamp(1.6rem,4vw,3.2rem);
+  background:linear-gradient(160deg,rgba(255,255,255,.07),rgba(255,255,255,.02));
+  border:1px solid var(--stroke);backdrop-filter:blur(20px);
+  box-shadow:var(--shadow-1);
+  position:relative;overflow:hidden;
+}
+.order-shell::before{
+  content:"";position:absolute;inset:-1px;border-radius:inherit;padding:1px;pointer-events:none;
+  background:linear-gradient(140deg,rgba(124,92,255,.55),transparent 30%,transparent 70%,rgba(34,211,238,.55));
+  -webkit-mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);
+  -webkit-mask-composite:xor;mask-composite:exclude;
+}
+.order-head{text-align:center;max-width:640px;margin:0 auto 2.6rem}
+.order-head .section-sub{margin-inline:auto}
+.form-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:1.15rem}
+.field{display:flex;flex-direction:column;gap:.45rem;position:relative}
+.field.full{grid-column:1/-1}
+.field label{font-size:.85rem;font-weight:600;color:var(--ink-dim);display:flex;gap:.4em;align-items:baseline}
+.field label .req{color:var(--rose)}
+.field label .opt{font-family:var(--font-mono);font-size:.68rem;color:var(--ink-faint);text-transform:uppercase;letter-spacing:.1em}
+.field input,.field select,.field textarea{
+  background:rgba(11,14,29,.55);border:1px solid var(--stroke);
+  border-radius:var(--radius-s);padding:.85em 1em;color:var(--ink);
+  transition:border-color .25s,box-shadow .25s,background .25s;
+  width:100%;appearance:none;
+}
+.field textarea{resize:vertical;min-height:110px}
+.field input::placeholder,.field textarea::placeholder{color:var(--ink-faint)}
+.field input:focus,.field select:focus,.field textarea:focus{
+  outline:none;border-color:var(--violet);
+  box-shadow:0 0 0 3px rgba(124,92,255,.22);background:rgba(11,14,29,.8);
+}
+.field.invalid input,.field.invalid select,.field.invalid textarea{border-color:var(--err);box-shadow:0 0 0 3px rgba(255,107,107,.15)}
+.field .hint-err{display:none;color:var(--err);font-size:.75rem}
+.field.invalid .hint-err{display:block;animation:shake .35s ease}
+@keyframes shake{0%,100%{transform:translateX(0)}25%{transform:translateX(-5px)}75%{transform:translateX(5px)}}
+.select-wrap{position:relative}
+.select-wrap::after{
+  content:"";position:absolute;right:1rem;top:50%;width:8px;height:8px;
+  border-right:2px solid var(--ink-faint);border-bottom:2px solid var(--ink-faint);
+  transform:translateY(-70%) rotate(45deg);pointer-events:none;
+}
+.field select option{background:var(--bg-1);color:var(--ink)}
+/* Segmentos de dificultad */
+.seg{display:flex;gap:.5rem;flex-wrap:wrap}
+.seg input{position:absolute;opacity:0;pointer-events:none}
+.seg label{
+  flex:1;min-width:90px;text-align:center;padding:.7em .8em;border-radius:var(--radius-s);
+  border:1px solid var(--stroke);background:rgba(11,14,29,.55);cursor:pointer;
+  font-size:.88rem;color:var(--ink-dim);transition:all .25s;display:block;font-weight:600;
+}
+.seg input:checked + label{background:linear-gradient(140deg,rgba(124,92,255,.35),rgba(34,211,238,.2));border-color:var(--violet);color:var(--ink);box-shadow:0 0 0 3px rgba(124,92,255,.15)}
+.seg label:hover{border-color:rgba(124,92,255,.5)}
+.form-divider{grid-column:1/-1;display:flex;align-items:center;gap:1rem;color:var(--ink-faint);font-family:var(--font-mono);font-size:.72rem;letter-spacing:.2em;text-transform:uppercase;margin:.8rem 0 .2rem}
+.form-divider::before,.form-divider::after{content:"";flex:1;height:1px;background:var(--stroke-soft)}
+
+/* ---------- 11. Zona de archivos ---------- */
+.dropzone{
+  grid-column:1/-1;border:1.5px dashed rgba(124,92,255,.45);border-radius:var(--radius-m);
+  padding:2rem;text-align:center;cursor:pointer;transition:all .3s;
+  background:rgba(124,92,255,.04);position:relative;
+}
+.dropzone:hover,.dropzone.dragover{background:rgba(124,92,255,.1);border-color:var(--cyan);transform:scale(1.005)}
+.dropzone svg{width:42px;height:42px;margin:0 auto .8rem;color:var(--violet)}
+.dropzone strong{color:var(--ink)}
+.dropzone p{color:var(--ink-dim);font-size:.9rem}
+.dropzone small{display:block;margin-top:.5rem;color:var(--ink-faint);font-family:var(--font-mono);font-size:.7rem;letter-spacing:.05em}
+.file-list{grid-column:1/-1;display:flex;flex-direction:column;gap:.6rem}
+.file-item{
+  display:flex;align-items:center;gap:.9rem;padding:.75rem 1rem;
+  background:var(--glass);border:1px solid var(--stroke-soft);border-radius:var(--radius-s);
+  animation:fileIn .4s cubic-bezier(.2,.7,.2,1);
+}
+@keyframes fileIn{from{opacity:0;transform:translateY(10px) scale(.97)}to{opacity:1;transform:none}}
+.file-ico{width:38px;height:38px;flex:none;border-radius:10px;display:grid;place-items:center;background:rgba(34,211,238,.12);border:1px solid rgba(34,211,238,.3)}
+.file-ico svg{width:19px;height:19px;color:var(--cyan)}
+.file-meta{flex:1;min-width:0}
+.file-name{font-size:.9rem;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.file-size{font-family:var(--font-mono);font-size:.72rem;color:var(--ink-faint)}
+.file-bar{height:4px;border-radius:99px;background:rgba(255,255,255,.08);margin-top:.4rem;overflow:hidden}
+.file-bar i{display:block;height:100%;width:0%;background:var(--grad-main);border-radius:99px;transition:width .25s linear}
+.file-item.ready .file-bar i{background:var(--ok)}
+.file-remove{background:none;border:none;cursor:pointer;color:var(--ink-faint);width:32px;height:32px;border-radius:8px;display:grid;place-items:center;transition:all .25s;flex:none}
+.file-remove:hover{color:var(--err);background:rgba(255,107,107,.12)}
+.file-remove svg{width:16px;height:16px}
+.file-summary{
+  grid-column:1/-1;display:flex;justify-content:space-between;align-items:center;gap:1rem;flex-wrap:wrap;
+  padding:.9rem 1.1rem;border-radius:var(--radius-s);
+  background:rgba(255,180,84,.07);border:1px solid rgba(255,180,84,.3);
+  font-size:.85rem;color:var(--ink-dim);
+}
+.file-summary strong{color:var(--amber)}
+.file-note{display:flex;gap:.6rem;align-items:flex-start}
+.file-note svg{width:17px;height:17px;color:var(--amber);flex:none;margin-top:.15em}
+.submit-row{grid-column:1/-1;display:flex;justify-content:center;margin-top:1rem}
+.btn-submit{min-width:260px;font-size:1.05rem;padding:1.05em 2.2em}
+.btn-submit.loading{pointer-events:none;opacity:.85}
+.spinner{width:19px;height:19px;border:2.5px solid rgba(255,255,255,.35);border-top-color:#fff;border-radius:50%;animation:spin .7s linear infinite;display:none}
+.btn-submit.loading .spinner{display:block}
+.btn-submit.loading .send-ico{display:none}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+/* ---------- 12. Modal ---------- */
+.modal-backdrop{
+  position:fixed;inset:0;background:rgba(6,8,18,.75);backdrop-filter:blur(10px);
+  z-index:1500;display:grid;place-items:center;padding:1.2rem;
+  opacity:0;pointer-events:none;transition:opacity .3s;
+}
+.modal-backdrop.show{opacity:1;pointer-events:auto}
+.modal{
+  width:min(560px,100%);border-radius:var(--radius-l);padding:2.4rem;
+  background:linear-gradient(165deg,#171C3E,#10142E);
+  border:1px solid var(--stroke);box-shadow:var(--shadow-1);
+  transform:translateY(26px) scale(.97);transition:transform .35s cubic-bezier(.2,.7,.2,1);
+  text-align:center;position:relative;
+}
+.modal-backdrop.show .modal{transform:none}
+.modal-close{position:absolute;top:1rem;right:1rem;background:var(--glass);border:1px solid var(--stroke-soft);width:36px;height:36px;border-radius:10px;cursor:pointer;color:var(--ink-dim);display:grid;place-items:center;transition:all .25s}
+.modal-close:hover{color:var(--ink);background:var(--glass-strong)}
+.modal-check{width:74px;height:74px;margin:0 auto 1.2rem;border-radius:50%;background:rgba(61,220,151,.12);border:1px solid rgba(61,220,151,.4);display:grid;place-items:center;animation:pop .5s cubic-bezier(.2,.7,.3,1.4)}
+.modal-check svg{width:34px;height:34px;color:var(--ok)}
+@keyframes pop{from{transform:scale(.4);opacity:0}to{transform:scale(1);opacity:1}}
+.modal h3{font-size:1.5rem;margin-bottom:.5rem}
+.modal p{color:var(--ink-dim);font-size:.95rem}
+.modal-files{
+  margin:1.2rem 0;padding:1rem;text-align:left;border-radius:var(--radius-s);
+  background:rgba(255,180,84,.07);border:1px solid rgba(255,180,84,.3);font-size:.85rem;
+}
+.modal-files strong{color:var(--amber);display:flex;gap:.5em;align-items:center;margin-bottom:.4rem}
+.modal-files strong svg{width:16px;height:16px}
+.modal-files ul{list-style:none;color:var(--ink-dim);font-family:var(--font-mono);font-size:.76rem;display:flex;flex-direction:column;gap:.2rem;max-height:110px;overflow:auto}
+.modal-actions{display:flex;gap:1rem;margin-top:1.6rem;flex-wrap:wrap}
+.modal-actions .btn{flex:1;min-width:200px}
+.btn-wa{background:linear-gradient(120deg,#25D366,#128C7E);color:#fff;box-shadow:0 8px 30px rgba(37,211,102,.3)}
+.btn-wa:hover{transform:translateY(-3px);box-shadow:0 14px 44px rgba(37,211,102,.45)}
+.btn-mail{background:var(--grad-main);color:#fff;box-shadow:0 8px 30px rgba(124,92,255,.35)}
+.btn-mail:hover{transform:translateY(-3px);box-shadow:0 14px 44px rgba(124,92,255,.5)}
+
+/* ---------- 13. FAQ ---------- */
+.faq-list{max-width:760px;margin:2.4rem auto 0;display:flex;flex-direction:column;gap:.9rem}
+.faq{border-radius:var(--radius-m);overflow:hidden;transition:border-color .3s}
+.faq.open{border-color:rgba(124,92,255,.45)}
+.faq-q{
+  width:100%;background:none;border:none;cursor:pointer;text-align:left;
+  padding:1.25rem 1.4rem;display:flex;justify-content:space-between;align-items:center;gap:1rem;
+  font-weight:700;font-size:1rem;color:var(--ink);
+}
+.faq-q svg{width:20px;height:20px;flex:none;color:var(--cyan);transition:transform .35s}
+.faq.open .faq-q svg{transform:rotate(45deg)}
+.faq-a{max-height:0;overflow:hidden;transition:max-height .4s cubic-bezier(.2,.7,.2,1)}
+.faq-a p{padding:0 1.4rem 1.3rem;color:var(--ink-dim);font-size:.94rem}
+
+/* ---------- 14. Testimonios ---------- */
+.testi-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:1.3rem;margin-top:2.4rem}
+.testi{padding:1.7rem;border-radius:var(--radius-m);display:flex;flex-direction:column;gap:1rem;transition:transform .35s,border-color .35s}
+.testi:hover{transform:translateY(-6px);border-color:rgba(34,211,238,.4)}
+.testi-stars{display:flex;gap:.2rem}
+.testi-stars svg{width:16px;height:16px;color:var(--amber)}
+.testi p{color:var(--ink-dim);font-size:.93rem;flex:1}
+.testi-who{display:flex;align-items:center;gap:.8rem}
+.testi-ava{width:42px;height:42px;border-radius:50%;display:grid;place-items:center;font-weight:800;font-family:var(--font-display);color:#fff;font-size:.95rem}
+.testi-who strong{display:block;font-size:.9rem}
+.testi-who span{font-size:.76rem;color:var(--ink-faint);font-family:var(--font-mono)}
+
+/* ---------- 15. Footer + flotantes ---------- */
+footer{border-top:1px solid var(--stroke-soft);padding:3.5rem 0 2rem;margin-top:40px;background:rgba(11,14,29,.5)}
+.foot-grid{display:grid;grid-template-columns:1.4fr 1fr 1fr;gap:2.5rem;margin-bottom:2.5rem}
+.foot-brand p{color:var(--ink-dim);font-size:.9rem;max-width:300px;margin-top:.8rem}
+.foot-col h4{font-size:.82rem;font-family:var(--font-mono);letter-spacing:.18em;text-transform:uppercase;color:var(--ink-faint);margin-bottom:1rem}
+.foot-col ul{list-style:none;display:flex;flex-direction:column;gap:.55rem}
+.foot-col a{color:var(--ink-dim);font-size:.92rem;transition:color .25s}
+.foot-col a:hover{color:var(--cyan)}
+.foot-bottom{display:flex;justify-content:space-between;gap:1rem;flex-wrap:wrap;padding-top:1.6rem;border-top:1px solid var(--stroke-soft);color:var(--ink-faint);font-size:.8rem}
+.foot-honest{display:inline-flex;gap:.5em;align-items:center;color:var(--ok);font-size:.8rem}
+.foot-honest svg{width:15px;height:15px}
+
+/* Botones flotantes */
+.fab{
+  position:fixed;z-index:800;width:56px;height:56px;border-radius:50%;
+  display:grid;place-items:center;cursor:pointer;border:none;
+  transition:transform .3s,opacity .3s,box-shadow .3s;
+}
+.fab svg{width:26px;height:26px}
+.fab-wa{right:22px;bottom:22px;background:linear-gradient(140deg,#25D366,#128C7E);color:#fff;box-shadow:0 10px 30px rgba(37,211,102,.4)}
+.fab-wa:hover{transform:scale(1.1) rotate(6deg)}
+.fab-wa::after{content:"";position:absolute;inset:-6px;border-radius:50%;border:2px solid rgba(37,211,102,.5);animation:pulse 2.2s ease-out infinite}
+@keyframes pulse{0%{transform:scale(.85);opacity:1}100%{transform:scale(1.35);opacity:0}}
+.fab-top{right:22px;bottom:92px;background:var(--glass-strong);border:1px solid var(--stroke);color:var(--ink);backdrop-filter:blur(12px);opacity:0;pointer-events:none;transform:translateY(14px)}
+.fab-top.show{opacity:1;pointer-events:auto;transform:none}
+.fab-top:hover{background:rgba(124,92,255,.3)}
+
+/* ---------- 16. Reveal on scroll ---------- */
+.reveal{opacity:0;transform:translateY(34px);transition:opacity .8s cubic-bezier(.2,.7,.2,1),transform .8s cubic-bezier(.2,.7,.2,1);transition-delay:var(--d,0s)}
+.reveal.in{opacity:1;transform:none}
+
+/* ---------- 17. Responsive ---------- */
+@media (max-width:960px){
+  .hero-grid{grid-template-columns:1fr;text-align:center}
+  .hero-sub{margin-inline:auto}
+  .hero-actions,.hero-badges{justify-content:center}
+  .orbit-stage{max-width:420px}
+  .fc-1{left:0}.fc-2{right:0}
+  .stats-grid{grid-template-columns:repeat(2,1fr)}
+  .stat + .stat::before{display:none}
+  .steps,.testi-grid{grid-template-columns:1fr}
+  .foot-grid{grid-template-columns:1fr 1fr}
+}
+@media (max-width:720px){
+  section{padding:70px 0}
+  .nav-links{
+    position:fixed;inset:0;background:rgba(11,14,29,.96);backdrop-filter:blur(20px);
+    flex-direction:column;justify-content:center;gap:2rem;font-size:1.2rem;
+    transform:translateX(100%);transition:transform .4s cubic-bezier(.2,.7,.2,1);
+  }
+  .nav-links.open{transform:none}
+  .nav-toggle{display:block}
+  .nav .nav-cta{display:none}
+  .form-grid{grid-template-columns:1fr}
+  .modal{padding:1.8rem}
+  .foot-grid{grid-template-columns:1fr}
+  .float-card{display:none}
+}
+
+/* ---------- 18. Reduced motion ---------- */
+@media (prefers-reduced-motion:reduce){
+  *,*::before,*::after{animation-duration:.01ms !important;animation-iteration-count:1 !important;transition-duration:.01ms !important}
+  html{scroll-behavior:auto}
+  .reveal{opacity:1;transform:none}
+  .hero [data-stagger]{opacity:1;transform:none}
+}
+:focus-visible{outline:2px solid var(--cyan);outline-offset:3px;border-radius:4px}
+</style>
+</head>
+<body class="custom-cursor">
+<!-- ============ Cursor, progreso y fondo ============ -->
+<div class="cursor-dot" id="cursorDot"></div>
+<div class="cursor-ring" id="cursorRing"></div>
+<div id="scrollProgress"></div>
+<div class="bg-scene" id="bgScene">
+  <div class="blob blob-1"></div>
+  <div class="blob blob-2"></div>
+  <div class="blob blob-3"></div>
+</div>
+
+<!-- ============ Navegación ============ -->
+<nav class="nav" id="nav">
+  <div class="nav-inner">
+    <a href="#inicio" class="logo">
+      <svg class="logo-mark" viewBox="0 0 40 40" fill="none" aria-hidden="true">
+        <circle cx="20" cy="20" r="15" stroke="url(#lg1)" stroke-width="2" stroke-dasharray="4 5"/>
+        <circle cx="20" cy="20" r="6" fill="url(#lg1)"/>
+        <circle cx="33" cy="13" r="3.4" fill="#FFB454"/>
+        <defs><linearGradient id="lg1" x1="0" y1="0" x2="40" y2="40"><stop stop-color="#7C5CFF"/><stop offset="1" stop-color="#22D3EE"/></linearGradient></defs>
+      </svg>
+      Órbita<span class="grad-text">·</span>
+    </a>
+    <ul class="nav-links" id="navLinks">
+      <li><a href="#asesorias">Asesorías</a></li>
+      <li><a href="#proceso">Cómo funciona</a></li>
+      <li><a href="#agenda">Agendar</a></li>
+      <li><a href="#faq">Dudas</a></li>
+      <li><a href="#opiniones">Opiniones</a></li>
+    </ul>
+    <a href="#agenda" class="btn btn-primary nav-cta">Agendar sesión</a>
+    <button class="nav-toggle" id="navToggle" aria-label="Abrir menú"><span></span><span></span><span></span></button>
+  </div>
+</nav>
+
+<!-- ============ HERO ============ -->
+<header class="hero" id="inicio">
+  <div class="wrap hero-grid">
+    <div>
+      <span class="eyebrow" data-stagger style="--i:0">Asesorías académicas · Nivel prepa</span>
+      <h1 data-stagger style="--i:1">Tus materias, <span class="grad-text">por fin claras.</span><br>Tu trabajo, <span class="grad-text-warm">tuyo.</span></h1>
+      <p class="hero-sub" data-stagger style="--i:2">Agenda una asesoría 1 a 1: te explicamos el tema, revisamos tu borrador contigo y te enseñamos a estructurar ensayos, presentaciones y proyectos que presumas como propios.</p>
+      <div class="hero-actions" data-stagger style="--i:3">
+        <a href="#agenda" class="btn btn-primary">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="3"/><path d="M16 2v4M8 2v4M3 10h18M9 16l2 2 4-4"/></svg>
+          Agendar mi asesoría
+        </a>
+        <a href="#asesorias" class="btn btn-ghost">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M10 9l5 3-5 3z"/></svg>
+          Ver asesorías
+        </a>
+      </div>
+      <div class="hero-badges" data-stagger style="--i:4">
+        <div class="hero-badge"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg>Respuesta en menos de 1 hora</div>
+        <div class="hero-badge"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg>Sesiones en línea o por WhatsApp</div>
+        <div class="hero-badge"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg>Aprendes, no solo entregas</div>
+      </div>
+    </div>
+
+    <!-- Firma visual: sistema orbital de materias -->
+    <div class="orbit-stage" data-stagger style="--i:2" aria-hidden="true">
+      <svg class="orbit-svg" viewBox="0 0 520 520">
+        <defs>
+          <linearGradient id="coreGrad" x1="0" y1="0" x2="1" y2="1">
+            <stop stop-color="#7C5CFF"/><stop offset="1" stop-color="#22D3EE"/>
+          </linearGradient>
+        </defs>
+        <circle class="orbit-ring" cx="260" cy="260" r="115"/>
+        <circle class="orbit-ring" cx="260" cy="260" r="175"/>
+        <circle class="orbit-ring" cx="260" cy="260" r="232"/>
+        <!-- núcleo: tu tema -->
+        <g class="orbit-core">
+          <circle cx="260" cy="260" r="58" fill="url(#coreGrad)"/>
+          <text x="260" y="253" text-anchor="middle" font-size="15" font-weight="800" fill="#fff" font-family="system-ui">TU</text>
+          <text x="260" y="273" text-anchor="middle" font-size="15" font-weight="800" fill="#fff" font-family="system-ui">TEMA</text>
+        </g>
+        <!-- órbita 1 -->
+        <g class="orbiter" style="--speed:18s">
+          <g transform="translate(260,145)"><g class="orbiter-chip" style="--speed:18s">
+            <circle r="26" fill="#181D3F" stroke="rgba(124,92,255,.6)"/>
+            <text y="6" text-anchor="middle" font-size="18">📐</text>
+          </g></g>
+        </g>
+        <!-- órbita 2 -->
+        <g class="orbiter reverse" style="--speed:26s">
+          <g transform="translate(260,85)"><g class="orbiter-chip" style="--speed:26s">
+            <circle r="26" fill="#181D3F" stroke="rgba(34,211,238,.6)"/>
+            <text y="6" text-anchor="middle" font-size="18">🧪</text>
+          </g></g>
+        </g>
+        <g class="orbiter" style="--speed:26s">
+          <g transform="translate(435,260)"><g class="orbiter-chip" style="--speed:26s">
+            <circle r="26" fill="#181D3F" stroke="rgba(255,180,84,.6)"/>
+            <text y="6" text-anchor="middle" font-size="18">📚</text>
+          </g></g>
+        </g>
+        <!-- órbita 3 -->
+        <g class="orbiter reverse" style="--speed:36s">
+          <g transform="translate(260,28)"><g class="orbiter-chip" style="--speed:36s">
+            <circle r="26" fill="#181D3F" stroke="rgba(255,107,157,.6)"/>
+            <text y="6" text-anchor="middle" font-size="18">💻</text>
+          </g></g>
+        </g>
+        <g class="orbiter" style="--speed:36s">
+          <g transform="translate(92,380)"><g class="orbiter-chip" style="--speed:36s">
+            <circle r="26" fill="#181D3F" stroke="rgba(61,220,151,.6)"/>
+            <text y="6" text-anchor="middle" font-size="18">🎤</text>
+          </g></g>
+        </g>
+      </svg>
+      <div class="float-card fc-1">
+        <svg viewBox="0 0 24 24" fill="none" stroke="#3DDC97" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><path d="M22 4L12 14.01l-3-3"/></svg>
+        <div><strong>Ensayo estructurado</strong><span>Sesión completada · 45 min</span></div>
+      </div>
+      <div class="float-card fc-2">
+        <svg viewBox="0 0 24 24" fill="none" stroke="#FFB454" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 3"/></svg>
+        <div><strong>Próxima sesión</strong><span>Química · hoy 6:00 pm</span></div>
+      </div>
+      <div class="float-card fc-3">
+        <svg viewBox="0 0 24 24" fill="none" stroke="#22D3EE" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20V10M18 20V4M6 20v-4"/></svg>
+        <div><strong>Promedio subió +1.4</strong><span>Últimos 2 parciales</span></div>
+      </div>
+    </div>
+  </div>
+  <div class="scroll-hint"><div class="mouse"></div>DESLIZA</div>
+</header>
+
+<!-- ============ MÉTRICAS ============ -->
+<section class="stats-band" aria-label="Indicadores">
+  <div class="wrap">
+    <div class="stats-grid glass reveal">
+      <div class="stat"><div class="stat-num"><span class="count" data-target="45" data-suffix=" min">0</span></div><div class="stat-label">Tiempo promedio de respuesta</div></div>
+      <div class="stat"><div class="stat-num"><span class="count" data-target="320" data-suffix="+">0</span></div><div class="stat-label">Sesiones impartidas</div></div>
+      <div class="stat"><div class="stat-num"><span class="count" data-target="98" data-suffix="%">0</span></div><div class="stat-label">Estudiantes satisfechos</div></div>
+      <div class="stat"><div class="stat-num"><span class="count" data-target="17" data-suffix="+">0</span></div><div class="stat-label">Materias y formatos cubiertos</div></div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ ASESORÍAS ============ -->
+<section id="asesorias">
+  <div class="wrap">
+    <div class="services-head">
+      <div class="reveal">
+        <span class="eyebrow">Catálogo de asesorías</span>
+        <h2>Te enseñamos a hacerlo <span class="grad-text">bien</span></h2>
+        <p class="section-sub">Elige el tipo de apoyo que necesitas. En todas las sesiones trabajamos sobre TU material: tú lo haces, nosotros te guiamos paso a paso.</p>
+      </div>
+      <a href="#agenda" class="btn btn-ghost reveal" style="--d:.15s">Agendar ahora
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+      </a>
+    </div>
+    <div class="services-grid" id="servicesGrid"><!-- Tarjetas generadas por JS --></div>
+  </div>
+</section>
+
+<!-- ============ PROCESO ============ -->
+<section id="proceso">
+  <div class="wrap">
+    <div class="reveal">
+      <span class="eyebrow">Cómo funciona</span>
+      <h2>De la duda a la entrega en <span class="grad-text-warm">3 pasos</span></h2>
+    </div>
+    <div class="steps">
+      <div class="step glass reveal" style="--d:0s">
+        <span class="step-n">PASO 01</span>
+        <h3>Cuéntanos qué traes</h3>
+        <p>Llena el formulario con tu materia, el tema, la fecha de tu entrega y sube las instrucciones de tu profe o tu borrador.</p>
+      </div>
+      <div class="step glass reveal" style="--d:.12s">
+        <span class="step-n">PASO 02</span>
+        <h3>Agendamos tu sesión</h3>
+        <p>Te contactamos por WhatsApp o correo en menos de 1 hora para confirmar horario, duración y el plan de trabajo de tu asesoría.</p>
+      </div>
+      <div class="step glass reveal" style="--d:.24s">
+        <span class="step-n">PASO 03</span>
+        <h3>Trabajamos juntos</h3>
+        <p>En la sesión desarrollas tu trabajo con guía en vivo: estructura, formato, correcciones y práctica hasta que lo domines.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ FORMULARIO ============ -->
+<section class="order" id="agenda">
+  <div class="wrap">
+    <div class="order-shell reveal">
+      <div class="order-head">
+        <span class="eyebrow" style="justify-content:center">Agenda tu asesoría</span>
+        <h2>Planea tu <span class="grad-text">sesión</span></h2>
+        <p class="section-sub">Entre más contexto nos des (instrucciones del profe, tu avance, la rúbrica), mejor preparamos tu asesoría.</p>
+      </div>
+
+      <form id="orderForm" class="form-grid" novalidate>
+        <div class="form-divider">Sobre ti</div>
+
+        <div class="field">
+          <label for="fNombre">Nombre completo <span class="req">*</span></label>
+          <input type="text" id="fNombre" name="nombre" placeholder="Ej. Dana Robles" required>
+          <span class="hint-err">Escribe tu nombre.</span>
+        </div>
+        <div class="field">
+          <label for="fCorreo">Correo <span class="req">*</span></label>
+          <input type="email" id="fCorreo" name="correo" placeholder="tucorreo@ejemplo.com" required>
+          <span class="hint-err">Ingresa un correo válido.</span>
+        </div>
+        <div class="field">
+          <label for="fWhats">WhatsApp <span class="req">*</span></label>
+          <input type="tel" id="fWhats" name="whatsapp" placeholder="Ej. 664 123 4567" required>
+          <span class="hint-err">Ingresa tu número (10 dígitos).</span>
+        </div>
+        <div class="field">
+          <label for="fEscuela">Escuela <span class="req">*</span></label>
+          <input type="text" id="fEscuela" name="escuela" placeholder="Ej. Prepa Federal Lázaro Cárdenas" required>
+          <span class="hint-err">Escribe tu escuela.</span>
+        </div>
+        <div class="field">
+          <label for="fMateria">Materia <span class="req">*</span></label>
+          <input type="text" id="fMateria" name="materia" placeholder="Ej. Química II" required>
+          <span class="hint-err">¿De qué materia es?</span>
+        </div>
+        <div class="field">
+          <label for="fProfe">Profesor(a) <span class="opt">Opcional</span></label>
+          <input type="text" id="fProfe" name="profesor" placeholder="Para adaptar la asesoría a su estilo">
+        </div>
+
+        <div class="form-divider">Tu asesoría</div>
+
+        <div class="field">
+          <label for="fTipo">Tipo de asesoría <span class="req">*</span></label>
+          <div class="select-wrap">
+            <select id="fTipo" name="tipo" required>
+              <option value="" disabled selected>Selecciona una opción…</option>
+            </select>
+          </div>
+          <span class="hint-err">Elige el tipo de asesoría.</span>
+        </div>
+        <div class="field">
+          <label for="fFormato">Formato de tu material <span class="req">*</span></label>
+          <div class="select-wrap">
+            <select id="fFormato" name="formato" required>
+              <option value="" disabled selected>Selecciona…</option>
+              <option>Word</option><option>PDF</option><option>PowerPoint</option>
+              <option>Excel</option><option>Canva</option><option>Aún no tengo material</option><option>Otro</option>
+            </select>
+          </div>
+          <span class="hint-err">Elige el formato.</span>
+        </div>
+        <div class="field">
+          <label for="fFecha">Fecha de tu entrega <span class="req">*</span></label>
+          <input type="date" id="fFecha" name="fecha" required>
+          <span class="hint-err">Selecciona la fecha límite de tu trabajo.</span>
+        </div>
+        <div class="field">
+          <label for="fHora">Horario preferido para tu sesión <span class="req">*</span></label>
+          <input type="time" id="fHora" name="hora" required>
+          <span class="hint-err">¿A qué hora te acomoda?</span>
+        </div>
+        <div class="field full">
+          <label>Nivel del tema <span class="req">*</span></label>
+          <div class="seg" id="segNivel">
+            <input type="radio" id="nv1" name="nivel" value="Básico"><label for="nv1">🌱 Básico</label>
+            <input type="radio" id="nv2" name="nivel" value="Medio" checked><label for="nv2">⚡ Medio</label>
+            <input type="radio" id="nv3" name="nivel" value="Avanzado"><label for="nv3">🚀 Avanzado</label>
+          </div>
+        </div>
+        <div class="field">
+          <label for="fPaginas">Extensión de tu trabajo (páginas) <span class="opt">Opcional</span></label>
+          <input type="number" id="fPaginas" name="paginas" min="0" max="200" placeholder="Ej. 5">
+        </div>
+        <div class="field">
+          <label for="fSlides">Diapositivas (si aplica) <span class="opt">Opcional</span></label>
+          <input type="number" id="fSlides" name="diapositivas" min="0" max="200" placeholder="Ej. 10">
+        </div>
+
+        <div class="form-divider">El detalle</div>
+
+        <div class="field full">
+          <label for="fDesc">¿En qué necesitas ayuda exactamente? <span class="req">*</span></label>
+          <textarea id="fDesc" name="descripcion" placeholder="Ej. Tengo que entregar un ensayo argumentativo sobre el cambio climático y no sé cómo estructurarlo ni cómo citar en APA. Ya tengo ideas pero no sé ordenarlas…" required></textarea>
+          <span class="hint-err">Cuéntanos qué necesitas (mínimo 20 caracteres).</span>
+        </div>
+        <div class="field full">
+          <label for="fInstr">Pega aquí las instrucciones de tu profe <span class="opt">Opcional</span></label>
+          <textarea id="fInstr" name="instrucciones" placeholder="Copia y pega la rúbrica, los requisitos o el mensaje del profesor tal cual…"></textarea>
+        </div>
+        <div class="field full">
+          <label for="fObs">Observaciones <span class="opt">Opcional</span></label>
+          <textarea id="fObs" name="observaciones" placeholder="Horarios en los que NO puedes, si prefieres videollamada o WhatsApp, si es en equipo, etc." style="min-height:80px"></textarea>
+        </div>
+
+        <div class="form-divider">Tu material</div>
+
+        <div class="dropzone" id="dropzone" role="button" tabindex="0" aria-label="Subir archivos">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="M17 8l-5-5-5 5M12 3v12"/></svg>
+          <strong>Arrastra tus archivos aquí</strong>
+          <p>o haz clic para elegirlos — instrucciones, rúbrica, tu borrador, apuntes…</p>
+          <small>PDF · DOCX · DOC · PPTX · XLSX · ZIP · RAR · PNG · JPG · JPEG — hasta 10 archivos</small>
+          <input type="file" id="fileInput" multiple hidden
+                 accept=".pdf,.docx,.doc,.pptx,.xlsx,.zip,.rar,.png,.jpg,.jpeg">
+        </div>
+        <div class="file-list" id="fileList"></div>
+        <div class="file-summary" id="fileSummary" hidden>
+          <div class="file-note">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 8v4M12 16h.01"/></svg>
+            <span>Estos archivos <strong>se adjuntan manualmente</strong> al abrir WhatsApp o tu correo. Tenlos a la mano; te lo recordamos al final. 😉</span>
+          </div>
+          <span><strong id="fileCount">0</strong> archivo(s) · <strong id="fileTotal">0 KB</strong></span>
+        </div>
+
+        <div class="submit-row">
+          <button type="submit" class="btn btn-warm btn-submit" id="btnSubmit">
+            <span class="spinner"></span>
+            <svg class="send-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 2L11 13M22 2l-7 20-4-9-9-4z"/></svg>
+            <span class="btn-label">Enviar solicitud</span>
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</section>
+
+<!-- ============ MODAL DE ENVÍO ============ -->
+<div class="modal-backdrop" id="modalBackdrop" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
+  <div class="modal">
+    <button class="modal-close" id="modalClose" aria-label="Cerrar">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M18 6L6 18M6 6l12 12"/></svg>
+    </button>
+    <div class="modal-check">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg>
+    </div>
+    <h3 id="modalTitle">¡Tu solicitud está lista! 🎉</h3>
+    <p>Elige por dónde quieres enviarla. El mensaje ya va armado con toda tu información.</p>
+    <div class="modal-files" id="modalFiles" hidden>
+      <strong>
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48"/></svg>
+        No olvides adjuntar estos archivos:
+      </strong>
+      <ul id="modalFileList"></ul>
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-wa" id="btnWhats">
+        <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12.04 2c-5.46 0-9.91 4.45-9.91 9.91 0 1.75.46 3.45 1.32 4.95L2.05 22l5.25-1.38a9.87 9.87 0 0 0 4.74 1.21c5.46 0 9.91-4.45 9.91-9.91S17.5 2 12.04 2zm5.83 14.12c-.25.7-1.45 1.33-2 1.38-.54.05-1.05.24-3.53-.74-2.99-1.18-4.9-4.22-5.05-4.42-.15-.2-1.21-1.61-1.21-3.07s.77-2.18 1.04-2.48c.27-.3.6-.37.8-.37h.57c.18 0 .43-.07.67.51.25.6.85 2.07.92 2.22.08.15.13.33.03.53-.53 1.07-1.1 1.03-.81 1.52 1.08 1.86 2.16 2.5 3.8 3.33.28.14.44.12.6-.07.16-.19.7-.81.88-1.09.18-.28.37-.23.62-.14.25.1 1.6.76 1.87.9.28.13.46.2.53.31.07.12.07.68-.18 1.38z"/></svg>
+        Enviar por WhatsApp
+      </button>
+      <button class="btn btn-mail" id="btnMail">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="4" width="20" height="16" rx="3"/><path d="M22 7l-10 6L2 7"/></svg>
+        Enviar por correo
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- ============ FAQ ============ -->
+<section id="faq">
+  <div class="wrap">
+    <div class="reveal" style="text-align:center">
+      <span class="eyebrow" style="justify-content:center">Preguntas frecuentes</span>
+      <h2>Lo que todos <span class="grad-text">preguntan</span></h2>
+    </div>
+    <div class="faq-list" id="faqList"><!-- Generado por JS --></div>
+  </div>
+</section>
+
+<!-- ============ TESTIMONIOS ============ -->
+<section id="opiniones">
+  <div class="wrap">
+    <div class="reveal">
+      <span class="eyebrow">Opiniones</span>
+      <h2>Estudiantes que ya <span class="grad-text-warm">dominan su tema</span></h2>
+    </div>
+    <div class="testi-grid" id="testiGrid"><!-- Generado por JS --></div>
+  </div>
+</section>
+
+<!-- ============ FOOTER ============ -->
+<footer>
+  <div class="wrap">
+    <div class="foot-grid">
+      <div class="foot-brand">
+        <a href="#inicio" class="logo">
+          <svg class="logo-mark" viewBox="0 0 40 40" fill="none" aria-hidden="true">
+            <circle cx="20" cy="20" r="15" stroke="url(#lg2)" stroke-width="2" stroke-dasharray="4 5"/>
+            <circle cx="20" cy="20" r="6" fill="url(#lg2)"/>
+            <circle cx="33" cy="13" r="3.4" fill="#FFB454"/>
+            <defs><linearGradient id="lg2" x1="0" y1="0" x2="40" y2="40"><stop stop-color="#7C5CFF"/><stop offset="1" stop-color="#22D3EE"/></linearGradient></defs>
+          </svg>
+          Órbita<span class="grad-text">·</span>
+        </a>
+        <p>Asesorías académicas 1 a 1 para estudiantes de preparatoria. Te guiamos, tú lo logras.</p>
+        <p class="foot-honest">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+          100% honesto: te enseñamos, no hacemos trabajos por ti.
+        </p>
+      </div>
+      <div class="foot-col">
+        <h4>Navega</h4>
+        <ul>
+          <li><a href="#asesorias">Asesorías</a></li>
+          <li><a href="#proceso">Cómo funciona</a></li>
+          <li><a href="#agenda">Agendar sesión</a></li>
+          <li><a href="#faq">Preguntas frecuentes</a></li>
+        </ul>
+      </div>
+      <div class="foot-col">
+        <h4>Contacto</h4>
+        <ul>
+          <li><a href="#" id="footWa">WhatsApp directo</a></li>
+          <li><a href="#" id="footMail">Correo</a></li>
+          <li><a href="#agenda">Formulario de sesión</a></li>
+        </ul>
+      </div>
+    </div>
+    <div class="foot-bottom">
+      <span>© <span id="year"></span> Órbita · Asesorías Académicas</span>
+      <span>Hecho con ☕ y muchas ganas de que apruebes.</span>
+    </div>
+  </div>
+</footer>
+
+<!-- ============ Flotantes ============ -->
+<button class="fab fab-top" id="fabTop" aria-label="Volver arriba">
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 19V5M5 12l7-7 7 7"/></svg>
+</button>
+<a class="fab fab-wa" id="fabWa" href="#" target="_blank" rel="noopener" aria-label="WhatsApp">
+  <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12.04 2c-5.46 0-9.91 4.45-9.91 9.91 0 1.75.46 3.45 1.32 4.95L2.05 22l5.25-1.38a9.87 9.87 0 0 0 4.74 1.21c5.46 0 9.91-4.45 9.91-9.91S17.5 2 12.04 2zm5.83 14.12c-.25.7-1.45 1.33-2 1.38-.54.05-1.05.24-3.53-.74-2.99-1.18-4.9-4.22-5.05-4.42-.15-.2-1.21-1.61-1.21-3.07s.77-2.18 1.04-2.48c.27-.3.6-.37.8-.37h.57c.18 0 .43-.07.67.51.25.6.85 2.07.92 2.22.08.15.13.33.03.53-.53 1.07-1.1 1.03-.81 1.52 1.08 1.86 2.16 2.5 3.8 3.33.28.14.44.12.6-.07.16-.19.7-.81.88-1.09.18-.28.37-.23.62-.14.25.1 1.6.76 1.87.9.28.13.46.2.53.31.07.12.07.68-.18 1.38z"/></svg>
+</a>
+
+<script>
+/* ============================================================
+   ÓRBITA · Lógica de la aplicación
+   ------------------------------------------------------------
+   ÍNDICE JS
+   01. Configuración (EDITA AQUÍ tu número y correo)
+   02. Datos: asesorías, FAQ, testimonios
+   03. Render de tarjetas / FAQ / testimonios
+   04. Cursor personalizado
+   05. Fondo: estrellas
+   06. Navegación + progreso de scroll + fab
+   07. Contadores animados + reveal on scroll
+   08. Gestión de archivos
+   09. Validación y envío del formulario
+   10. Generación de mensajes (WhatsApp / correo)
+   ============================================================ */
+
+/* ---------- 01. CONFIGURACIÓN ---------- */
+const CONFIG = {
+  // Número en formato internacional (52 + 1 + 10 dígitos, sin + ni espacios)
+  whatsapp: "5216645364932",
+  // Correo de contacto
+  email: "v7428779@gmail.com",
+  maxFiles: 10,
+  allowedExt: ["pdf","docx","doc","pptx","xlsx","zip","rar","png","jpg","jpeg"],
+};
+
+/* ---------- 02. DATOS ---------- */
+const SERVICES = [
+  {icon:"📝", tag:"1 a 1", title:"Asesoría de tareas", desc:"Resolvemos tus tareas contigo, explicándote cada paso hasta que puedas hacerlo sin ayuda."},
+  {icon:"🧩", tag:"guiado", title:"Proyectos escolares", desc:"Planeamos tu proyecto juntos: idea, cronograma, desarrollo y cómo presentarlo."},
+  {icon:"🔬", tag:"método", title:"Metodología de investigación", desc:"Aprende a buscar fuentes confiables, plantear hipótesis y organizar tu investigación."},
+  {icon:"📊", tag:"diseño", title:"Presentaciones PowerPoint", desc:"Te enseñamos a estructurar y diseñar diapositivas que se vean pro y digan algo."},
+  {icon:"✍️", tag:"escritura", title:"Ensayos: estructura y revisión", desc:"Tesis, argumentos, conclusión. Revisamos TU borrador y te mostramos cómo mejorarlo."},
+  {icon:"📄", tag:"escritura", title:"Reportes y trabajos escritos", desc:"Del reporte de práctica al trabajo final: formato, redacción y coherencia."},
+  {icon:"🗺️", tag:"estudio", title:"Guías de estudio", desc:"Convertimos tu temario en una guía con lo esencial para tu examen, hecha contigo."},
+  {icon:"⚡", tag:"estudio", title:"Técnicas de resumen", desc:"Aprende a resumir de verdad: ideas principales, mapas y notas que sí sirven."},
+  {icon:"🎤", tag:"práctica", title:"Ensayo de exposiciones", desc:"Practica tu exposición con nosotros: manejo de nervios, tiempos y preguntas del profe."},
+  {icon:"📑", tag:"formato", title:"Formato APA", desc:"Citas, referencias, márgenes y portada. Sales citando en APA con los ojos cerrados."},
+  {icon:"🎨", tag:"visual", title:"Infografías", desc:"Te enseñamos a jerarquizar información y diseñar infografías claras y llamativas."},
+  {icon:"🧠", tag:"visual", title:"Organizadores gráficos", desc:"Mapas mentales, conceptuales, cuadros sinópticos: cuándo usar cada uno y cómo."},
+  {icon:"📈", tag:"herramienta", title:"Excel desde cero", desc:"Fórmulas, tablas y gráficas para tus trabajos. Práctica en vivo sobre tu archivo."},
+  {icon:"📘", tag:"herramienta", title:"Word como experto", desc:"Índices automáticos, estilos, numeración y formato profesional para tus documentos."},
+  {icon:"🧾", tag:"herramienta", title:"PDF: edición y organización", desc:"Aprende a combinar, firmar, comentar y organizar tus PDF escolares."},
+  {icon:"🖌️", tag:"herramienta", title:"Canva para la escuela", desc:"Domina Canva: plantillas, composición y exportado para tus trabajos visuales."},
+  {icon:"🎯", tag:"a tu medida", title:"Asesoría personalizada", desc:"¿Tu caso no aparece aquí? Cuéntanos qué necesitas aprender y armamos tu sesión."},
+];
+
+const FAQS = [
+  {q:"¿Hacen el trabajo por mí?", a:"No, y esa es justo la diferencia. Trabajamos SOBRE tu trabajo, contigo en la sesión: te explicamos el tema, corregimos juntos y te enseñamos el método. Tú entregas algo que hiciste y que puedes defender frente a tu profe."},
+  {q:"¿Cómo son las sesiones?", a:"En línea, por videollamada o WhatsApp, de 45 a 90 minutos según el tema. Compartes pantalla o nos mandas tu avance, y vamos trabajando en vivo paso a paso."},
+  {q:"¿Qué pasa después de enviar el formulario?", a:"Te respondemos en menos de 1 hora (horario 9 am – 9 pm) para confirmar horario, duración recomendada y costo de tu sesión. Nada se cobra hasta que confirmes."},
+  {q:"¿Y si mi entrega es mañana?", a:"Márcalo en observaciones. Tenemos espacios exprés el mismo día sujetos a disponibilidad; en una sesión intensiva avanzamos lo más posible contigo."},
+  {q:"¿Puedo tomar la asesoría en equipo?", a:"¡Sí! Si el trabajo es en equipo, pueden entrar todos a la sesión y el costo se divide. Indícalo en observaciones con cuántos son."},
+  {q:"¿Por qué me piden subir archivos?", a:"Las instrucciones de tu profe, la rúbrica y tu avance nos permiten preparar tu sesión antes de empezar, así no perdemos ni un minuto. Recuerda: los adjuntas manualmente al abrir WhatsApp o el correo."},
+];
+
+const TESTIMONIALS = [
+  {name:"Ximena R.", who:"5to semestre · Ensayo de Ética", color:"#7C5CFF", text:"Llegué sin saber ni qué era una tesis. En una sesión entendí la estructura y mi ensayo sacó 9.5. Lo mejor: el siguiente lo hice yo sola."},
+  {name:"Diego M.", who:"4to semestre · Química", color:"#22D3EE", text:"Me explicaron balanceo de ecuaciones mejor que en clase. Practicamos con mi propia tarea y en el examen ya no batallé."},
+  {name:"Fer & equipo", who:"6to semestre · Proyecto final", color:"#FF6B9D", text:"Tomamos la asesoría los 4 del equipo. Nos ayudaron a repartir el trabajo, armar la presentación y ensayar la expo. El profe nos felicitó."},
+  {name:"Santiago L.", who:"3er semestre · Formato APA", color:"#FFB454", text:"Cero idea de citar en APA. En 45 minutos aprendí citas, referencias y hasta configurar Word para que lo haga casi solo."},
+  {name:"Valeria G.", who:"5to semestre · Exposición", color:"#3DDC97", text:"Ensayé mi expo con ellos dos veces. Me quitaron muletillas y me enseñaron a controlar los nervios. Primera vez que expongo sin leer."},
+  {name:"Andrés P.", who:"4to semestre · Excel", color:"#7C5CFF", text:"Necesitaba gráficas para mi reporte y no sabía ni sumar en Excel. Ahora hasta le hago las tablas a mi mamá para su negocio."},
+];
+
+/* ---------- 03. RENDER ---------- */
+const $ = (s, ctx=document) => ctx.querySelector(s);
+const $$ = (s, ctx=document) => [...ctx.querySelectorAll(s)];
+
+// Tarjetas de asesorías
+const grid = $("#servicesGrid");
+const typeSelect = $("#fTipo");
+SERVICES.forEach((s, i) => {
+  // Tarjeta
+  const card = document.createElement("article");
+  card.className = "svc reveal";
+  card.style.setProperty("--d", `${(i % 4) * 0.08}s`);
+  card.innerHTML = `
+    <span class="svc-tag">${s.tag}</span>
+    <div class="svc-icon"><span style="font-size:22px">${s.icon}</span></div>
+    <h3>${s.title}</h3>
+    <p>${s.desc}</p>
+    <button type="button" class="svc-cta" data-service="${s.title}">
+      Agendar esta asesoría
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+    </button>`;
+  grid.appendChild(card);
+  // Opción del select
+  const opt = document.createElement("option");
+  opt.textContent = s.title;
+  typeSelect.appendChild(opt);
+});
+
+// Halo que sigue al mouse en las tarjetas
+grid.addEventListener("mousemove", e => {
+  const card = e.target.closest(".svc");
+  if (!card) return;
+  const r = card.getBoundingClientRect();
+  card.style.setProperty("--mx", `${((e.clientX - r.left) / r.width) * 100}%`);
+});
+
+// Botón "Agendar esta asesoría": preselecciona y baja al formulario
+grid.addEventListener("click", e => {
+  const btn = e.target.closest(".svc-cta");
+  if (!btn) return;
+  typeSelect.value = btn.dataset.service;
+  typeSelect.closest(".field").classList.remove("invalid");
+  $("#agenda").scrollIntoView({behavior:"smooth"});
+  typeSelect.style.boxShadow = "0 0 0 3px rgba(255,180,84,.45)";
+  setTimeout(() => typeSelect.style.boxShadow = "", 1600);
+});
+
+// FAQ
+const faqList = $("#faqList");
+FAQS.forEach((f, i) => {
+  const item = document.createElement("div");
+  item.className = "faq glass reveal";
+  item.style.setProperty("--d", `${i * 0.06}s`);
+  item.innerHTML = `
+    <button class="faq-q" aria-expanded="false">
+      ${f.q}
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>
+    </button>
+    <div class="faq-a"><p>${f.a}</p></div>`;
+  faqList.appendChild(item);
+});
+faqList.addEventListener("click", e => {
+  const q = e.target.closest(".faq-q");
+  if (!q) return;
+  const item = q.parentElement;
+  const ans = $(".faq-a", item);
+  const isOpen = item.classList.contains("open");
+  // Cierra los demás
+  $$(".faq.open", faqList).forEach(o => {
+    o.classList.remove("open");
+    $(".faq-a", o).style.maxHeight = null;
+    $(".faq-q", o).setAttribute("aria-expanded", "false");
+  });
+  if (!isOpen) {
+    item.classList.add("open");
+    ans.style.maxHeight = ans.scrollHeight + "px";
+    q.setAttribute("aria-expanded", "true");
+  }
+});
+
+// Testimonios
+const testiGrid = $("#testiGrid");
+TESTIMONIALS.forEach((t, i) => {
+  const stars = Array(5).fill(
+    '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l2.9 6.6 7.1.6-5.4 4.8 1.6 7-6.2-3.7L5.8 21l1.6-7L2 9.2l7.1-.6z"/></svg>'
+  ).join("");
+  const el = document.createElement("figure");
+  el.className = "testi glass reveal";
+  el.style.setProperty("--d", `${(i % 3) * 0.1}s`);
+  el.innerHTML = `
+    <div class="testi-stars">${stars}</div>
+    <p>“${t.text}”</p>
+    <figcaption class="testi-who">
+      <span class="testi-ava" style="background:linear-gradient(140deg,${t.color},rgba(255,255,255,.25))">${t.name.charAt(0)}</span>
+      <div><strong>${t.name}</strong><span>${t.who}</span></div>
+    </figcaption>`;
+  testiGrid.appendChild(el);
+});
+
+/* ---------- 04. CURSOR PERSONALIZADO ---------- */
+(() => {
+  if (!matchMedia("(pointer:fine)").matches) return;
+  const dot = $("#cursorDot"), ring = $("#cursorRing");
+  let mx = -100, my = -100, rx = -100, ry = -100;
+  addEventListener("mousemove", e => { mx = e.clientX; my = e.clientY; });
+  (function loop(){
+    rx += (mx - rx) * 0.16;
+    ry += (my - ry) * 0.16;
+    dot.style.transform = `translate(${mx}px,${my}px) translate(-50%,-50%)`;
+    ring.style.transform = `translate(${rx}px,${ry}px) translate(-50%,-50%)`;
+    requestAnimationFrame(loop);
+  })();
+  // Crece sobre elementos interactivos
+  addEventListener("mouseover", e => {
+    ring.classList.toggle("is-hover", !!e.target.closest("a,button,select,label,input,textarea,.dropzone"));
+  });
+})();
+
+/* ---------- 05. ESTRELLAS ---------- */
+(() => {
+  const scene = $("#bgScene");
+  const n = matchMedia("(max-width:720px)").matches ? 40 : 90;
+  const frag = document.createDocumentFragment();
+  for (let i = 0; i < n; i++) {
+    const s = document.createElement("i");
+    s.className = "star";
+    const size = Math.random() * 2.2 + 0.6;
+    s.style.cssText = `width:${size}px;height:${size}px;left:${Math.random()*100}%;top:${Math.random()*100}%;--tw:${(Math.random()*4+3).toFixed(1)}s;animation-delay:${(Math.random()*-6).toFixed(1)}s`;
+    frag.appendChild(s);
+  }
+  scene.appendChild(frag);
+})();
+
+/* ---------- 06. NAV + SCROLL ---------- */
+const nav = $("#nav"), progress = $("#scrollProgress"), fabTop = $("#fabTop");
+addEventListener("scroll", () => {
+  const y = scrollY;
+  nav.classList.toggle("scrolled", y > 30);
+  fabTop.classList.toggle("show", y > 600);
+  const h = document.documentElement.scrollHeight - innerHeight;
+  progress.style.width = `${(y / h) * 100}%`;
+}, {passive:true});
+fabTop.addEventListener("click", () => scrollTo({top:0, behavior:"smooth"}));
+
+// Menú móvil
+const navToggle = $("#navToggle"), navLinks = $("#navLinks");
+navToggle.addEventListener("click", () => {
+  navToggle.classList.toggle("open");
+  navLinks.classList.toggle("open");
+});
+navLinks.addEventListener("click", e => {
+  if (e.target.tagName === "A") { navToggle.classList.remove("open"); navLinks.classList.remove("open"); }
+});
+
+/* ---------- 07. CONTADORES + REVEAL ---------- */
+const io = new IntersectionObserver(entries => {
+  entries.forEach(en => {
+    if (!en.isIntersecting) return;
+    en.target.classList.add("in");
+    // Contadores dentro del elemento revelado
+    $$(".count", en.target).forEach(c => {
+      if (c.dataset.done) return;
+      c.dataset.done = "1";
+      const target = +c.dataset.target, suffix = c.dataset.suffix || "";
+      const t0 = performance.now(), dur = 1600;
+      (function tick(now){
+        const p = Math.min((now - t0) / dur, 1);
+        const eased = 1 - Math.pow(1 - p, 3);
+        c.textContent = Math.round(target * eased) + suffix;
+        if (p < 1) requestAnimationFrame(tick);
+      })(t0);
+    });
+    io.unobserve(en.target);
+  });
+}, {threshold:.18});
+$$(".reveal").forEach(el => io.observe(el));
+
+/* ---------- 08. ARCHIVOS ---------- */
+const dropzone = $("#dropzone"), fileInput = $("#fileInput");
+const fileListEl = $("#fileList"), fileSummary = $("#fileSummary");
+const fileCountEl = $("#fileCount"), fileTotalEl = $("#fileTotal");
+let files = []; // {file, id}
+
+const fmtSize = b => b < 1024 ? `${b} B` : b < 1048576 ? `${(b/1024).toFixed(1)} KB` : `${(b/1048576).toFixed(2)} MB`;
+const extOf = name => name.split(".").pop().toLowerCase();
+
+dropzone.addEventListener("click", () => fileInput.click());
+dropzone.addEventListener("keydown", e => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); fileInput.click(); }});
+["dragenter","dragover"].forEach(ev => dropzone.addEventListener(ev, e => { e.preventDefault(); dropzone.classList.add("dragover"); }));
+["dragleave","drop"].forEach(ev => dropzone.addEventListener(ev, e => { e.preventDefault(); dropzone.classList.remove("dragover"); }));
+dropzone.addEventListener("drop", e => addFiles(e.dataTransfer.files));
+fileInput.addEventListener("change", () => { addFiles(fileInput.files); fileInput.value = ""; });
+
+function addFiles(list) {
+  for (const f of list) {
+    if (files.length >= CONFIG.maxFiles) { toastZone(`Máximo ${CONFIG.maxFiles} archivos.`); break; }
+    if (!CONFIG.allowedExt.includes(extOf(f.name))) { toastZone(`"${f.name}" no es un formato permitido.`); continue; }
+    if (files.some(x => x.file.name === f.name && x.file.size === f.size)) continue; // duplicado
+    const id = `f${Date.now()}${Math.random().toString(36).slice(2,6)}`;
+    files.push({file:f, id});
+    renderFileItem(f, id);
+  }
+  updateSummary();
+}
+
+function renderFileItem(f, id) {
+  const item = document.createElement("div");
+  item.className = "file-item";
+  item.id = id;
+  item.innerHTML = `
+    <span class="file-ico">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/></svg>
+    </span>
+    <div class="file-meta">
+      <div class="file-name">${f.name}</div>
+      <div class="file-size">${fmtSize(f.size)} · ${extOf(f.name).toUpperCase()}</div>
+      <div class="file-bar"><i></i></div>
+    </div>
+    <button type="button" class="file-remove" aria-label="Quitar ${f.name}">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M18 6L6 18M6 6l12 12"/></svg>
+    </button>`;
+  fileListEl.appendChild(item);
+  // Barra de progreso simulada
+  const bar = $(".file-bar i", item);
+  let p = 0;
+  const iv = setInterval(() => {
+    p = Math.min(p + Math.random() * 24 + 8, 100);
+    bar.style.width = p + "%";
+    if (p >= 100) { clearInterval(iv); item.classList.add("ready"); }
+  }, 140);
+  // Quitar archivo
+  $(".file-remove", item).addEventListener("click", () => {
+    files = files.filter(x => x.id !== id);
+    item.style.opacity = "0"; item.style.transform = "translateX(14px)"; item.style.transition = "all .3s";
+    setTimeout(() => { item.remove(); updateSummary(); }, 280);
+  });
+}
+
+function updateSummary() {
+  const total = files.reduce((a, x) => a + x.file.size, 0);
+  fileCountEl.textContent = files.length;
+  fileTotalEl.textContent = fmtSize(total);
+  fileSummary.hidden = files.length === 0;
+}
+
+function toastZone(msg) {
+  const small = $("small", dropzone);
+  const orig = small.dataset.orig || (small.dataset.orig = small.textContent);
+  small.textContent = `⚠️ ${msg}`;
+  small.style.color = "var(--err)";
+  setTimeout(() => { small.textContent = orig; small.style.color = ""; }, 2600);
+}
+
+/* ---------- 09. VALIDACIÓN Y ENVÍO ---------- */
+const form = $("#orderForm"), btnSubmit = $("#btnSubmit");
+const modal = $("#modalBackdrop");
+
+// Fecha mínima = hoy
+$("#fFecha").min = new Date().toISOString().split("T")[0];
+
+const validators = {
+  fNombre: v => v.trim().length >= 3,
+  fCorreo: v => /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(v.trim()),
+  fWhats:  v => v.replace(/\D/g, "").length >= 10,
+  fEscuela:v => v.trim().length >= 3,
+  fMateria:v => v.trim().length >= 2,
+  fTipo:   v => v !== "",
+  fFormato:v => v !== "",
+  fFecha:  v => v !== "",
+  fHora:   v => v !== "",
+  fDesc:   v => v.trim().length >= 20,
+};
+
+// Validación en vivo al salir del campo
+Object.keys(validators).forEach(id => {
+  const el = $("#" + id);
+  el.addEventListener("blur", () => setValidity(el));
+  el.addEventListener("input", () => { if (el.closest(".field").classList.contains("invalid")) setValidity(el); });
+});
+function setValidity(el) {
+  const ok = validators[el.id](el.value);
+  el.closest(".field").classList.toggle("invalid", !ok);
+  return ok;
+}
+
+form.addEventListener("submit", e => {
+  e.preventDefault();
+  let firstBad = null;
+  Object.keys(validators).forEach(id => {
+    const el = $("#" + id);
+    if (!setValidity(el) && !firstBad) firstBad = el;
+  });
+  if (firstBad) {
+    firstBad.closest(".field").scrollIntoView({behavior:"smooth", block:"center"});
+    firstBad.focus({preventScroll:true});
+    return;
+  }
+  // Animación de carga y modal
+  btnSubmit.classList.add("loading");
+  $(".btn-label", btnSubmit).textContent = "Preparando tu solicitud…";
+  setTimeout(() => {
+    btnSubmit.classList.remove("loading");
+    $(".btn-label", btnSubmit).textContent = "Enviar solicitud";
+    openModal();
+  }, 1400);
+});
+
+function openModal() {
+  const mf = $("#modalFiles"), ul = $("#modalFileList");
+  ul.innerHTML = "";
+  if (files.length) {
+    files.forEach(x => {
+      const li = document.createElement("li");
+      li.textContent = `📎 ${x.file.name} (${fmtSize(x.file.size)})`;
+      ul.appendChild(li);
+    });
+    mf.hidden = false;
+  } else mf.hidden = true;
+  modal.classList.add("show");
+  document.body.style.overflow = "hidden";
+}
+function closeModal() {
+  modal.classList.remove("show");
+  document.body.style.overflow = "";
+}
+$("#modalClose").addEventListener("click", closeModal);
+modal.addEventListener("click", e => { if (e.target === modal) closeModal(); });
+addEventListener("keydown", e => { if (e.key === "Escape") closeModal(); });
+
+/* ---------- 10. MENSAJES ---------- */
+function getData() {
+  const v = id => $("#" + id).value.trim();
+  return {
+    nombre: v("fNombre"), correo: v("fCorreo"), whats: v("fWhats"),
+    escuela: v("fEscuela"), materia: v("fMateria"), profe: v("fProfe") || "—",
+    tipo: v("fTipo"), formato: v("fFormato"),
+    fecha: v("fFecha"), hora: v("fHora"),
+    nivel: ($('input[name="nivel"]:checked') || {}).value || "Medio",
+    paginas: v("fPaginas") || "—", slides: v("fSlides") || "—",
+    desc: v("fDesc"), instr: v("fInstr") || "—", obs: v("fObs") || "—",
+  };
+}
+
+function buildMessage(d) {
+  const lista = files.length
+    ? files.map(x => `   • ${x.file.name}`).join("\n")
+    : "   (sin archivos)";
+  return [
+    "🪐 *NUEVA SOLICITUD DE ASESORÍA — ÓRBITA*",
+    "",
+    "👤 *Estudiante*",
+    `   Nombre: ${d.nombre}`,
+    `   Escuela: ${d.escuela}`,
+    `   Correo: ${d.correo}`,
+    `   WhatsApp: ${d.whats}`,
+    "",
+    "📚 *Asesoría solicitada*",
+    `   Tipo: ${d.tipo}`,
+    `   Materia: ${d.materia}`,
+    `   Profesor(a): ${d.profe}`,
+    `   Nivel del tema: ${d.nivel}`,
+    `   Formato del material: ${d.formato}`,
+    `   Páginas: ${d.paginas} · Diapositivas: ${d.slides}`,
+    "",
+    "🗓 *Tiempos*",
+    `   Fecha de entrega del trabajo: ${d.fecha}`,
+    `   Horario preferido de sesión: ${d.hora}`,
+    "",
+    "📝 *¿En qué necesita ayuda?*",
+    `   ${d.desc}`,
+    "",
+    "📋 *Instrucciones del profesor*",
+    `   ${d.instr}`,
+    "",
+    "💬 *Observaciones*",
+    `   ${d.obs}`,
+    "",
+    "📎 *Archivos que voy a adjuntar manualmente:*",
+    lista,
+  ].join("\n");
+}
+
+$("#btnWhats").addEventListener("click", () => {
+  const msg = buildMessage(getData());
+  window.open(`https://wa.me/${CONFIG.whatsapp}?text=${encodeURIComponent(msg)}`, "_blank");
+});
+
+$("#btnMail").addEventListener("click", () => {
+  const d = getData();
+  const subject = `Solicitud de asesoría · ${d.tipo} · ${d.nombre}`;
+  const body = buildMessage(d).replace(/\*/g, ""); // sin negritas de WhatsApp
+  location.href = `mailto:${CONFIG.email}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+});
+
+/* Enlaces flotantes y footer */
+$("#fabWa").href = `https://wa.me/${CONFIG.whatsapp}?text=${encodeURIComponent("¡Hola! Quiero información sobre una asesoría 🪐")}`;
+$("#footWa").href = $("#fabWa").href;
+$("#footWa").target = "_blank";
+$("#footMail").href = `mailto:${CONFIG.email}`;
+$("#year").textContent = new Date().getFullYear();
+</script>
+</body>
+</html>
