@@ -6,6 +6,7 @@ Tracker de gym por perfiles (Diana y Yo), publicado en **Cloudflare Pages** con 
 - Series de aproximación ya calculadas (50/70/90 % × 12/8/4), temporizador de descanso e intervalos HIIT.
 - Calendario de asistencia, % de cumplimiento, gráficas por ejercicio y series por músculo contra el volumen objetivo.
 - Medidas corporales con tendencia de peso.
+- Pestaña **Correr**: plan de 13 semanas para medio maratón con meta intermedia de 5K en menos de 25:00, pruebas de 5K en las semanas 4, 8 y 12, ritmos que se recalculan con cada prueba, predicción de tiempo y cronómetro por bloques.
 - Rutina editable por perfil. Mesociclo de 5 semanas, la última de descarga.
 - Funciona sin señal en el gym: guarda en el teléfono y sube a la nube cuando vuelve la conexión.
 - Se puede instalar en la pantalla de inicio (Compartir → "Agregar a inicio").
