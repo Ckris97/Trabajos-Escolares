@@ -1,0 +1,15 @@
+{
+  "name": "Bitácora de Gym",
+  "short_name": "Bitácora",
+  "description": "Rutina, series, asistencia y progreso por perfil.",
+  "lang": "es",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#E4E7EA",
+  "theme_color": "#14202E",
+  "icons": [
+    { "src": "/icon-192.png", "sizes": "192x192", "type": "image/png" },
+    { "src": "/icon-512.png", "sizes": "512x512", "type": "image/png" },
+    { "src": "/icon.svg", "sizes": "any", "type": "image/svg+xml" }
+  ]
+}

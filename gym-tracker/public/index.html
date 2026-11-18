@@ -8,6 +8,9 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <title>Bitácora de Gym</title>
 <meta name="description" content="Tracker de entrenamiento por perfiles: registra series, cargas, repeticiones y RIR, asistencia, medidas corporales y progreso.">
+<link rel="manifest" href="/manifest.webmanifest">
+<link rel="icon" href="/icon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="/icon-192.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700;800&family=Barlow:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -96,6 +99,12 @@ h2{font-size:1.75rem} h3{font-size:1.25rem}
 .pchip{display:flex;align-items:center;gap:7px;padding:5px 12px 5px 5px;border-radius:999px;border:1.5px solid var(--line);background:var(--panel);font-weight:600;font-size:.95rem;white-space:nowrap}
 .pchip .av{width:26px;height:26px;border-radius:50%;display:grid;place-items:center;color:#fff;font-family:var(--f-num);font-weight:700;font-size:.95rem}
 .pchip[aria-pressed="true"]{border-color:var(--pc);box-shadow:0 0 0 2px var(--pc) inset}
+.syncdot{width:28px;height:40px;flex:none;display:grid;place-items:center}
+.syncdot::before{content:"";width:10px;height:10px;border-radius:50%;background:var(--ink-3)}
+.syncdot[data-s="ok"]::before{background:var(--green)}
+.syncdot[data-s="saving"]::before{background:var(--yellow)}
+.syncdot[data-s="pin"]::before,.syncdot[data-s="nodb"]::before{background:var(--red)}
+.syncdot[data-s="offline"]::before,.syncdot[data-s="local"]::before{background:transparent;border:2px solid var(--ink-3)}
 .iconbtn{width:40px;height:40px;border-radius:12px;display:grid;place-items:center;color:var(--ink-2);flex:none}
 .iconbtn:hover{background:var(--panel-2);color:var(--ink)}
 .iconbtn svg{width:22px;height:22px}
@@ -127,7 +136,7 @@ hr{border:0;border-top:1px solid var(--line);margin:14px 0}
 .empty{padding:22px;text-align:center;color:var(--ink-2);border:1.5px dashed var(--line);border-radius:var(--r-m)}
 
 /* ---------- Buttons ---------- */
-.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:46px;padding:0 18px;border-radius:var(--r-m);font-weight:700;background:var(--panel-2);border:1.5px solid var(--line);color:var(--ink)}
+.btn{white-space:nowrap;display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:46px;padding:0 18px;border-radius:var(--r-m);font-weight:700;background:var(--panel-2);border:1.5px solid var(--line);color:var(--ink)}
 .btn:hover{border-color:var(--ink-3)}
 .btn.primary{background:var(--blue);border-color:var(--blue);color:var(--on-accent)}
 .btn.danger{color:var(--red);border-color:color-mix(in srgb,var(--red) 40%,var(--line))}
@@ -327,6 +336,7 @@ dialog::backdrop{background:rgba(10,14,20,.55)}
       <span>Bitácora</span>
     </div>
     <div class="profiles" id="profiles" role="group" aria-label="Perfil activo"></div>
+    <button class="syncdot" id="syncDot" data-act="openSettings" data-s="idle" aria-label="Sincronización"></button>
     <button class="iconbtn" data-act="openSettings" aria-label="Ajustes y perfiles">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg>
     </button>
@@ -446,32 +456,161 @@ let S;
 const ui = {tab:'hoy', calMonth:null, selDate:null, pickDay:null, pickWeek:null, progEx:null, progMetric:'e1rm', volWeek:0, bodyMetric:'weight', openDay:null};
 
 function uid(){return Date.now().toString(36)+Math.random().toString(36).slice(2,7)}
-function newProfile(name, color, info){
-  return {id:uid(), name, color, info:Object.assign({edad:'',tiempo:'',frecuencia:5,rutina:'Torso/pierna + descanso activo',enfasis:'',notas:''},info||{}),
+function newProfile(name, color, info, id){
+  return {id:id||uid(), _m:0, deletedIds:[], name, color, info:Object.assign({edad:'',tiempo:'',frecuencia:5,rutina:'Torso/pierna + descanso activo',enfasis:'',notas:''},info||{}),
     cycleStart:iso(mondayOf(new Date())), trainingDays:[1,2,3,4,5], routine:templateRoutine(), targets:Object.fromEntries(Object.entries(MUSCLES).map(([k,v])=>[k,v.t])),
     sessions:[], body:[]};
 }
 function freshState(){
-  const diana = newProfile('Diana', PLATE_COLORS[0], {edad:'22 años', tiempo:'2 años', frecuencia:5, enfasis:'Reducción de porcentaje de grasa'});
-  const yo = newProfile('Yo', PLATE_COLORS[1], {});
+  // ids fijos: si dos teléfonos arrancan desde cero, se combinan en el mismo perfil
+  const diana = newProfile('Diana', PLATE_COLORS[0], {edad:'22 años', tiempo:'2 años', frecuencia:5, enfasis:'Reducción de porcentaje de grasa'}, 'p-diana');
+  const yo = newProfile('Yo', PLATE_COLORS[1], {}, 'p-yo');
   return {v:1, active:diana.id, theme:'auto', profiles:[diana, yo]};
 }
 function load(){
   try{ const raw = localStorage.getItem(LS_KEY); if(raw){ S = JSON.parse(raw); } }catch(e){}
   normalize();
+  initLocalHashes();
+  persistLocal();
   try{ Object.assign(ui, JSON.parse(localStorage.getItem(UI_KEY)||'{}')); }catch(e){}
 }
 function normalize(){
-  if(!S || !Array.isArray(S.profiles) || !S.profiles.length){ S = freshState(); save(); }
+  if(!S || !Array.isArray(S.profiles) || !S.profiles.length){ const keep = S && S.theme; S = freshState(); if(keep) S.theme = keep; }
   S.theme ||= 'auto';
-  S.profiles.forEach(p=>{ p.sessions ||= []; p.body ||= []; p.targets ||= Object.fromEntries(Object.entries(MUSCLES).map(([k,v])=>[k,v.t])); p.trainingDays ||= [1,2,3,4,5]; });
+  S.profiles.forEach(p=>{ p.sessions ||= []; p.body ||= []; p.targets ||= Object.fromEntries(Object.entries(MUSCLES).map(([k,v])=>[k,v.t])); p.trainingDays ||= [1,2,3,4,5]; p.deletedIds ||= []; p._m ||= 0; });
   if(!S.profiles.find(p=>p.id===S.active)) S.active = S.profiles[0].id;
 }
 let saveWarned = false;
-function save(){
+// Guarda en el teléfono al instante y programa la sincronización con la nube
+function save(){ stampChanges(); persistLocal(); scheduleSync(); }
+function persistLocal(){
   try{ localStorage.setItem(LS_KEY, JSON.stringify(S)); }
-  catch(e){ if(!saveWarned){ saveWarned = true; toast('Este navegador no está guardando. Exporta un respaldo desde Ajustes.'); } }
+  catch(e){ if(!saveWarned){ saveWarned = true; toast('Este teléfono no está guardando localmente. Revisa el espacio del navegador.'); } }
+  saveSM();
 }
+
+/* ============================================================
+   2b. SINCRONIZACIÓN CON CLOUDFLARE (D1)
+   ------------------------------------------------------------
+   Cada perfil es un documento. Se guarda primero en el teléfono
+   (funciona sin señal en el gym) y luego se sube a /api.
+   Si otro teléfono subió algo más nuevo, se combinan: las sesiones
+   y medidas se unen por id y gana la edición más reciente.
+   ============================================================ */
+const SYNC_KEY = 'bitacora-gym.sync', PIN_KEY = 'bitacora-gym.pin';
+let SM = {};
+try{ SM = JSON.parse(localStorage.getItem(SYNC_KEY)||'{}'); }catch(e){}
+SM.profiles ||= {}; SM.deletes ||= [];
+function saveSM(){ try{ localStorage.setItem(SYNC_KEY, JSON.stringify(SM)); }catch(e){} }
+const getPin = () => { try{ return localStorage.getItem(PIN_KEY)||''; }catch(e){ return ''; } };
+function hash(str){ let h = 0x811c9dc5; for(let i=0;i<str.length;i++){ h ^= str.charCodeAt(i); h = Math.imul(h, 16777619); } return (h>>>0).toString(36)+'.'+str.length; }
+const meta = id => (SM.profiles[id] ||= {base:0, hash:'', local:''});
+const isDirty = p => meta(p.id).hash !== hash(JSON.stringify(p));
+function initLocalHashes(){ S.profiles.forEach(p=> meta(p.id).local = hash(JSON.stringify(p))); }
+function stampChanges(){
+  const now = Date.now();
+  S.profiles.forEach(p=>{
+    const m = meta(p.id);
+    if(hash(JSON.stringify(p)) === m.local) return;
+    p._m = now;
+    const live = p.sessions.find(s=>s.status==='live'); if(live) live._m = now;
+    m.local = hash(JSON.stringify(p));
+  });
+}
+function mergeList(a, b, dead){
+  const m = new Map();
+  [...(a||[]), ...(b||[])].forEach(it=>{ if(!it || dead.has(it.id)) return; const c = m.get(it.id); if(!c || (it._m||0) > (c._m||0)) m.set(it.id, it); });
+  return [...m.values()];
+}
+function mergeProfile(local, remote){
+  const dead = new Set([...(local.deletedIds||[]), ...(remote.deletedIds||[])]);
+  const base = (local._m||0) >= (remote._m||0) ? local : remote;
+  return {...base, deletedIds:[...dead].slice(-1000), sessions:mergeList(local.sessions, remote.sessions, dead), body:mergeList(local.body, remote.body, dead)};
+}
+
+let syncState = location.protocol==='file:' ? 'local' : 'idle', syncBusy = false, syncTimer = null, pendingRender = false;
+const SYNC_TXT = {ok:'Sincronizado', saving:'Guardando…', idle:'Conectando…', offline:'Sin conexión: guardado en el teléfono', local:'Solo en este teléfono', pin:'Falta el PIN', nodb:'Falta configurar la base de datos'};
+function setSync(st){ syncState = st; const d = $('#syncDot'); if(d){ d.dataset.s = st; d.title = SYNC_TXT[st]; d.setAttribute('aria-label', 'Sincronización: '+SYNC_TXT[st]); } const t = $('#syncTxt'); if(t) t.textContent = SYNC_TXT[st]; }
+async function api(method, path, body){
+  try{
+    const r = await fetch('/api/'+path, {method, cache:'no-store', headers:{'content-type':'application/json','x-pin':getPin()}, body: body ? JSON.stringify(body) : undefined});
+    let data = null; try{ data = await r.json(); }catch(e){}
+    return {status:r.status, data};
+  }catch(e){ return {status:0, data:null}; }
+}
+// true si se puede seguir; si no, actualiza el estado
+function okStatus(r){
+  if(r.status===200 || r.status===409) return true;
+  if(r.status===0) setSync('offline');
+  else if(r.status===401) setSync('pin');
+  else if(r.status===503 && r.data && r.data.error==='no-db') setSync('nodb');
+  else if(!r.data) setSync('local');          // hosting sin funciones
+  else setSync('offline');
+  return false;
+}
+function softRender(){
+  const a = document.activeElement;
+  if(dlg.open || (a && /INPUT|TEXTAREA|SELECT/.test(a.tagName))){ pendingRender = true; return; }
+  pendingRender = false; render();
+}
+document.addEventListener('focusout', ()=> setTimeout(()=>{ if(pendingRender) softRender(); }, 50));
+function scheduleSync(){ if(syncState==='local' && location.protocol==='file:') return; clearTimeout(syncTimer); syncTimer = setTimeout(()=>sync(), 1200); }
+
+async function sync(){
+  if(location.protocol==='file:') return;
+  if(syncBusy){ scheduleSync(); return; }
+  syncBusy = true;
+  try{ if(await pull()) await push(); }
+  finally{ syncBusy = false; }
+}
+async function pull(){
+  const r = await api('GET','state');
+  if(!okStatus(r)) return false;
+  let changed = false;
+  for(const sp of r.data.profiles){
+    const i = S.profiles.findIndex(p=>p.id===sp.id);
+    const m = meta(sp.id);
+    if(sp.updated_at <= m.base) continue;
+    if(sp.deleted){
+      if(i>=0){ S.profiles.splice(i,1); changed = true; }
+      delete SM.profiles[sp.id]; continue;
+    }
+    const merged = i>=0 && isDirty(S.profiles[i]) ? mergeProfile(S.profiles[i], sp.data) : sp.data;
+    if(i>=0) S.profiles[i] = merged; else S.profiles.push(merged);
+    m.base = sp.updated_at; m.hash = hash(JSON.stringify(sp.data)); m.local = hash(JSON.stringify(merged));
+    changed = true;
+  }
+  if(changed){ normalize(); persistLocal(); softRender(); }
+  return true;
+}
+async function push(){
+  for(const id of [...SM.deletes]){
+    const r = await api('DELETE','profiles/'+encodeURIComponent(id));
+    if(!okStatus(r)) return;
+    SM.deletes = SM.deletes.filter(x=>x!==id); delete SM.profiles[id]; saveSM();
+  }
+  for(const p0 of [...S.profiles]){
+    for(let attempt=0; attempt<3; attempt++){
+      const p = S.profiles.find(x=>x.id===p0.id); if(!p || !isDirty(p)) break;
+      setSync('saving');
+      const sent = JSON.stringify(p);
+      const r = await api('PUT','profiles/'+encodeURIComponent(p.id), {data:p, base:meta(p.id).base});
+      if(r.status===409){
+        const d = r.data, m = meta(p.id), i = S.profiles.findIndex(x=>x.id===p.id);
+        const merged = d.deleted ? p : mergeProfile(S.profiles[i], d.data);
+        S.profiles[i] = merged; m.base = d.updated_at; m.hash = d.deleted ? '' : hash(JSON.stringify(d.data)); m.local = hash(JSON.stringify(merged));
+        persistLocal(); softRender(); continue;
+      }
+      if(!okStatus(r)) return;
+      const m = meta(p.id); m.base = r.data.updated_at; m.hash = hash(sent); saveSM();
+      break;
+    }
+  }
+  setSync(S.profiles.some(isDirty) ? 'saving' : 'ok');
+  if(S.profiles.some(isDirty)) scheduleSync();
+}
+setInterval(()=>{ if(document.visibilityState==='visible') sync(); }, 45000);
+window.addEventListener('online', ()=>sync());
 function saveUI(){ try{ localStorage.setItem(UI_KEY, JSON.stringify({tab:ui.tab, progMetric:ui.progMetric, bodyMetric:ui.bodyMetric})); }catch(e){} }
 const P = () => S.profiles.find(p=>p.id===S.active);
 
@@ -867,7 +1006,7 @@ function finishSession(){
     const prev = Math.max(0,...exHistory(p, en.exId, s.id).flatMap(h=>h.en.sets.filter(x=>x.done).map(x=>e1rm(num(x.w)||0,num(x.r)||0))));
     if(prev && best > prev) prs.push({name:en.snap.name, val:best, prev});
   });
-  s.status = 'done'; s.endedAt = Date.now();
+  s.status = 'done'; s.endedAt = Date.now(); s._m = Date.now();
   save(); stopTimer(); releaseWake();
   showSummary(p, s, prs);
   render();
@@ -1295,8 +1434,14 @@ function settingsHTML(){
     <h3>Apariencia</h3>
     <div class="seg">${[['auto','Automático'],['light','Claro'],['dark','Oscuro']].map(([k,l])=>`<button data-act="theme" data-t="${k}" aria-pressed="${S.theme===k}">${l}</button>`).join('')}</div>
     <hr>
+    <h3>Sincronización</h3>
+    <p style="margin-bottom:8px"><span class="syncdot" data-s="${syncState}" style="display:inline-grid;height:auto;width:16px;vertical-align:middle"></span> <b id="syncTxt">${SYNC_TXT[syncState]}</b></p>
+    <p class="muted" style="font-size:.9rem;margin-bottom:10px">Todo se guarda primero en el teléfono, así funciona aunque no haya señal en el gym, y se sube a la nube en cuanto hay conexión. Diana y tú ven los mismos datos desde cualquier celular.</p>
+    <div class="row" style="max-width:420px"><input type="password" id="pinInput" inputmode="numeric" autocomplete="off" placeholder="PIN de la app" value="${esc(getPin())}" aria-label="PIN de la app"><button class="btn sm" data-act="savePin">Guardar PIN</button></div>
+    <button class="btn sm" style="margin-top:8px" data-act="syncNow">Sincronizar ahora</button>
+    <hr>
     <h3>Respaldo</h3>
-    <p class="muted" style="font-size:.9rem;margin-bottom:10px">Los datos se guardan solo en este navegador. Descarga un respaldo seguido y, si cada quien usa su celular, importa el archivo para pasar la información.</p>
+    <p class="muted" style="font-size:.9rem;margin-bottom:10px">Copia de seguridad en un archivo, por si acaso.</p>
     <div class="row wrapr">
       <button class="btn sm" data-act="exportJSON">Descargar respaldo (.json)</button>
       <button class="btn sm" data-act="importJSON">Importar respaldo</button>
@@ -1346,6 +1491,7 @@ const dlg = $('#dlg');
 function openDlg(html){ dlg.innerHTML = html; if(!dlg.open) dlg.showModal(); }
 function closeDlg(){ if(dlg.open) dlg.close(); }
 dlg.addEventListener('click', e=>{ if(e.target===dlg) closeDlg(); });
+dlg.addEventListener('close', ()=> setTimeout(()=>{ if(pendingRender) softRender(); }, 0));
 
 let T = null, tInt = null, audioCtx = null;
 function beep(freq=880, dur=.18){
@@ -1379,7 +1525,7 @@ function stopTimer(){ T = null; clearInterval(tInt); $('#timer').hidden = true; 
 let wakeLock = null;
 async function requestWake(){ try{ if('wakeLock' in navigator && liveSession(P())) wakeLock = await navigator.wakeLock.request('screen'); }catch(e){} }
 function releaseWake(){ try{ wakeLock && wakeLock.release(); }catch(e){} wakeLock = null; }
-document.addEventListener('visibilitychange', ()=>{ if(document.visibilityState==='visible'){ requestWake(); tick(); } });
+document.addEventListener('visibilitychange', ()=>{ if(document.visibilityState==='visible'){ requestWake(); tick(); sync(); } });
 setInterval(()=>{ const el = $('#elapsed'); const s = liveSession(P()); if(el && s) el.textContent = Math.round((Date.now()-s.startedAt)/60000)+' min'; }, 30000);
 
 /* ============================================================
@@ -1421,14 +1567,14 @@ const A = {
   timerAdd(){ if(T){ T.end += 15000; tick(); } },
   timerStop(){ stopTimer(); },
   finishSession(){ finishSession(); },
-  discardSession(){ const p = P(), s = liveSession(p); if(!s || !confirm('¿Descartar esta sesión? Se pierde lo registrado.')) return; p.sessions = p.sessions.filter(x=>x.id!==s.id); stopTimer(); releaseWake(); save(); render(); toast('Sesión descartada'); },
+  discardSession(){ const p = P(), s = liveSession(p); if(!s || !confirm('¿Descartar esta sesión? Se pierde lo registrado.')) return; p.sessions = p.sessions.filter(x=>x.id!==s.id); p.deletedIds.push(s.id); stopTimer(); releaseWake(); save(); render(); toast('Sesión descartada'); },
   calNav(b){ const now = new Date(); const [y,m] = ui.calMonth ? ui.calMonth.split('-').map(Number) : [now.getFullYear(), now.getMonth()+1]; const d = new Date(y, m-1+(+b.dataset.n), 1); ui.calMonth = `${d.getFullYear()}-${d.getMonth()+1}`; render(); },
   selDate(b){ ui.selDate = ui.selDate===b.dataset.d ? null : b.dataset.d; render(); },
   viewSession(b){ const p = P(); const s = p.sessions.find(x=>x.id===b.dataset.id); s && openDlg(sessionDetail(p,s)); },
-  deleteSession(b){ if(!confirm('¿Eliminar esta sesión del historial?')) return; const p = P(); p.sessions = p.sessions.filter(x=>x.id!==b.dataset.id); save(); closeDlg(); render(); toast('Sesión eliminada'); },
+  deleteSession(b){ if(!confirm('¿Eliminar esta sesión del historial?')) return; const p = P(); p.sessions = p.sessions.filter(x=>x.id!==b.dataset.id); p.deletedIds.push(b.dataset.id); save(); closeDlg(); render(); toast('Sesión eliminada'); },
   reopenSession(b){
     const p = P(); if(liveSession(p)){ toast('Termina o descarta la sesión en curso primero.'); return; }
-    const s = p.sessions.find(x=>x.id===b.dataset.id); s.status = 'live'; s._reopened = true; save(); closeDlg(); ui.tab='hoy'; render(); window.scrollTo(0,0);
+    const s = p.sessions.find(x=>x.id===b.dataset.id); s.status = 'live'; s._reopened = true; s._m = Date.now(); save(); closeDlg(); ui.tab='hoy'; render(); window.scrollTo(0,0);
   },
   logPast(b){
     const p = P(); if(liveSession(p)){ toast('Termina o descarta la sesión en curso primero.'); return; }
@@ -1443,12 +1589,12 @@ const A = {
   editBody(b){ openDlg(bodyForm(P().body.find(x=>x.id===b.dataset.id))); },
   saveBody(){
     const f = $('#bodyForm'); if(!f.reportValidity()) return; const fd = Object.fromEntries(new FormData(f));
-    const p = P(); const rec = {id: fd.id || uid(), date: fd.date, note: fd.note}; BODY_FIELDS.forEach(([k])=> rec[k] = fd[k]);
+    const p = P(); const rec = {id: fd.id || uid(), date: fd.date, note: fd.note, _m: Date.now()}; BODY_FIELDS.forEach(([k])=> rec[k] = fd[k]);
     if(!BODY_FIELDS.some(([k])=>rec[k]!=='')){ toast('Llena al menos una medida.'); return; }
     const i = p.body.findIndex(x=>x.id===rec.id); if(i>=0) p.body[i] = rec; else p.body.push(rec);
     save(); closeDlg(); render(); toast('Medición guardada');
   },
-  deleteBody(b){ if(!confirm('¿Eliminar esta medición?')) return; const p = P(); p.body = p.body.filter(x=>x.id!==b.dataset.id); save(); closeDlg(); render(); },
+  deleteBody(b){ if(!confirm('¿Eliminar esta medición?')) return; const p = P(); p.body = p.body.filter(x=>x.id!==b.dataset.id); p.deletedIds.push(b.dataset.id); save(); closeDlg(); render(); },
   editInfo(){ openDlg(infoForm(P())); },
   saveInfo(){ const fd = Object.fromEntries(new FormData($('#infoForm'))); Object.assign(P().info, fd); save(); closeDlg(); render(); toast('Ficha guardada'); },
   editTargets(){ openDlg(targetsForm(P())); },
@@ -1492,8 +1638,10 @@ const A = {
   deleteProfile(b){
     const p = S.profiles.find(x=>x.id===b.dataset.id);
     if(prompt(`Esto borra todo el historial de ${p.name}. Escribe su nombre para confirmar:`) !== p.name) return;
-    S.profiles = S.profiles.filter(x=>x.id!==p.id); if(S.active===p.id) S.active = S.profiles[0].id; save(); render(); openDlg(settingsHTML()); toast('Perfil eliminado');
+    S.profiles = S.profiles.filter(x=>x.id!==p.id); SM.deletes.push(p.id); if(S.active===p.id) S.active = S.profiles[0].id; save(); render(); openDlg(settingsHTML()); toast('Perfil eliminado');
   },
+  savePin(){ try{ localStorage.setItem(PIN_KEY, $('#pinInput').value.trim()); }catch(e){} toast('PIN guardado'); sync().then(()=>{ if(dlg.open) openDlg(settingsHTML()); }); },
+  syncNow(){ setSync('saving'); sync().then(()=>{ toast(SYNC_TXT[syncState]); if(dlg.open) openDlg(settingsHTML()); }); },
   exportJSON(){ download(`bitacora-gym-${iso(new Date())}.json`, JSON.stringify(S,null,1), 'application/json'); toast('Respaldo descargado'); },
   importJSON(){ $('#importFile').click(); },
   exportCSV(){
@@ -1518,7 +1666,7 @@ $('#importFile').addEventListener('change', async e=>{
         const ids = new Set(cur.sessions.map(s=>s.id)); ip.sessions.forEach(s=>{ if(!ids.has(s.id)) cur.sessions.push(s); });
         const bids = new Set(cur.body.map(b=>b.id)); (ip.body||[]).forEach(b=>{ if(!bids.has(b.id)) cur.body.push(b); });
       });
-    } else { S = data; }
+    } else { const keep = {active:S.active, theme:S.theme}; S = data; S.active = S.active||keep.active; S.theme = S.theme||keep.theme; }
     normalize(); save(); render(); closeDlg(); toast('Respaldo importado');
   }catch(err){ toast('El archivo no es un respaldo válido de la Bitácora.'); }
   e.target.value = '';
@@ -1552,6 +1700,8 @@ document.addEventListener('change', e=>{
    ============================================================ */
 load();
 render();
+setSync(syncState);
+sync();
 if(liveSession(P())) requestWake();
 </script>
 </body>

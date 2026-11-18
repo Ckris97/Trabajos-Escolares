@@ -1,0 +1,12 @@
+{
+  "name": "bitacora-gym",
+  "private": true,
+  "description": "Tracker de gym por perfiles en Cloudflare Pages + D1",
+  "scripts": {
+    "dev": "wrangler pages dev public --d1 DB",
+    "deploy": "wrangler pages deploy public --project-name bitacora-gym"
+  },
+  "devDependencies": {
+    "wrangler": "3.114.0"
+  }
+}
